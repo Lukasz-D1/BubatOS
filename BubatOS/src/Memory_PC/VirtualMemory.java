@@ -1,9 +1,9 @@
 package Memory;
 
-public class VirtualMemory {
-	byte free; //liczba wolnych stron
-	long states; //zmienna przechowująca stan każdej strony
-	char pages[][]; //tablica stron
+public final class VirtualMemory {
+	static byte free; //liczba wolnych stron
+	static long states; //zmienna przechowująca stan każdej strony
+	static char pages[][]; //tablica stron
 
 	VirtualMemory() {
 		pages = new char[64][16];
@@ -11,7 +11,7 @@ public class VirtualMemory {
 		free = 64;
 	}
 
-	byte[] load(char data[]) {
+	static byte[] load(char data[]) {
 		byte i = (byte) ((data.length + 15) / 16);
 		if (i > free) {// Błąd – za mało miejsca
 			return null;
@@ -35,8 +35,13 @@ public class VirtualMemory {
 		}
 		return ret;
 	}
-
-	void clear(byte tab[]) {
+	
+	static void update(byte ad, char[] data) {
+		pages[ad] = data;
+		return;
+	}
+	
+	static void clear(byte tab[]) {
 		free += (byte) tab.length;
 		for (byte i = (byte) tab.length; i != 0; --i) {
 			states &= 0 << tab[i];

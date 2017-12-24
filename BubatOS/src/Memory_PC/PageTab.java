@@ -74,7 +74,7 @@ public class PageTab {
 		return ret;
 	}
 	
-	//metoda zapisująca znaki data zaczynając od adresu ad
+	// metoda zapisująca znaki data zaczynając od adresu ad
 	void write(short ad, char[] data) {
 		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return;
@@ -84,53 +84,58 @@ public class PageTab {
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
-			char part[] = Memory.read(p, d, n);
-			byte re = 0;
+			char[] part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[i] = part[i];
+				part[i] = data[i];
 			}
-			re += n;
+			Memory.write(p, d, part);
+			byte wr = 0;
+			wr += n;
 			p = tab[ad / 16 + 1];
 			d = 0;
 			n = 16;
-			part = Memory.read(p, d, n);
+			part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[re + i] = part[i];
+				part[i] = data[wr + i];
 			}
-			re += n;
+			Memory.write(p, d, part);
+			wr += n;
 			p = tab[ad / 16 + 2];
 			d = 0;
-			n = (byte) (data.length-re);
-			part = Memory.read(p, d, n);
+			n = (byte) (data.length - wr);
+			part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[re + i] = part[i];
+				part[i] = data[wr + i];
 			}
+			Memory.write(p, d, part);
 		} else if ((ad % 16) + data.length > 16) { // zapisywanie na dwóch stronach
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
-			char part[] = Memory.read(p, d, n);
-			byte re = 0;
+			byte wr = 0;
+			char[] part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[i] = part[i];
+				part[i] = data[i];
 			}
-			re += n;
+			Memory.write(p, d, part);
+			wr += n;
 			p = tab[ad / 16 + 1];
 			d = 0;
-			n = (byte) (data.length-re);
-			part = Memory.read(p, d, n);
+			n = (byte) (data.length - wr);
+			part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[re + i] = part[i];
+				part[i] = data[wr + i];
 			}
-		}
-		else { //zapisywanie na jednej stronie
+			Memory.write(p, d, part);
+		} else { // zapisywanie na jednej stronie
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
-			char part[] = Memory.read(p, d, n);
+			char[] part = new char[n];
 			for (byte i = 0; i < n; ++i) {
-				ret[i] = part[i];
+				part[i] = data[i];
 			}
+			Memory.write(p, d, part);
 		}
 	}
 }

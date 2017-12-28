@@ -11,10 +11,10 @@ public final class Memory {
 			0 };
 
 	static void write(byte p, byte d, char[] data) {
-		for (byte i = 0; i != 3; ++i) {
-			if (addr[ws[i]] == p) {
+		for (byte i = 0; i != 4; ++i) {
+			if (addr[i] == p) {
 				ws[current] = i;
-				for (byte j = 0; j != data.length + d; ++j) {
+				for (byte j = 0; j != data.length; ++j) {
 					frames[ws[current] * 16 + d + j] = data[j];
 				}
 				for (byte j = 0; j != 16; ++j) {
@@ -82,7 +82,6 @@ public final class Memory {
 			++i;
 		}
 		if (ws[current] != -1 && addr[ws[current]] != -1) {
-			System.out.println("I'm overwriting page " + addr[ws[current]]);
 			for (i = 0; i != 16; ++i) {
 				MassMemory.pages[addr[ws[current]]][i] = frames[ws[current] * 16 + i];
 			}

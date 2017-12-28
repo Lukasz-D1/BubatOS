@@ -12,7 +12,7 @@ public class PageTab {
 	}
 
 	// metoda odczytująca amount znaków zaczynając od adresu ad
-	char[] read(int j, int amount) {
+	public char[] read(int j, int amount) {
 		if (j + amount >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return null;
 		}
@@ -72,7 +72,7 @@ public class PageTab {
 	}
 
 	// metoda zapisująca znaki data zaczynając od adresu ad
-	void write(int j, char[] data) {
+	public void write(int j, char[] data) {
 		if (j + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return;
 		}

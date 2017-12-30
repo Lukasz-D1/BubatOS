@@ -10,12 +10,7 @@ import ProcessManagment.Process;
 
 
 /*
- * - W deskryptorze procesu pola:
- * private byte PriorityNumber;
- * 	private byte DefaultGivenQuantumAmount;
-	private byte GivenQuantumAmount;
-	private byte UsedQuantumAmount;
-	private short AwaitingQuantumLength;
+ * MODUŁ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
  *  */
 
 
@@ -358,6 +353,11 @@ public class Scheduler {
 		 * takze flaga musi byc wyzerowana*/
 		this.IsExpropriated=false;
 		
+		/* Sprawdzenie czy juz nie czas odpalic BalanceSetManager do zaglodzonych watkow */
+		if (this.QuantumAmountCounter%QuantumAmountToRunBalanceSetManager==0) {
+			this.BalanceSetManager();
+		}
+		
 		Scheduler.Running=this.FindReadyThread();
 		Scheduler.Running.setStan(Process.processState.Running);
 		
@@ -366,6 +366,7 @@ public class Scheduler {
 			if (this.IsExpropriated==true) {
 				WasExpriopriatedDuringQuantum=true;
 				Scheduler.Running.setStan(Process.processState.Ready);
+				Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
 				if(Scheduler.Running.schedulingInformations.getUsedQuantumAmount()>=1) {
 					this.RemoveFromReadyList(Scheduler.Running);
 					this.AddToReadyList(Scheduler.Running);
@@ -393,8 +394,19 @@ public class Scheduler {
 		if (WasExpriopriatedDuringQuantum==false) {
 			Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
 			Scheduler.Running.schedulingInformations.setUsedQuantumAmount((byte) (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()+1));
+			
+			/* Jesli proces wykorzystal ilosc jednostek kwantow czasu nalezy powziac odpowiednie kroki*/
 			if (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()==Scheduler.Running.schedulingInformations.getGivenQuantumAmount()) {
-				
+				/* Wyzerowanie ilosci uzytych jednostek kwantow czasu*/
+				Scheduler.Running.schedulingInformations.setUsedQuantumAmount((byte) 0);
+				/* Jesli tymczasowo podwyzszono ilosc danych jednostek kwantow czasu dla danego procesu, po ich wykorzystaniu nalezy wrocic do wartosci domyslnych*/
+				if (Scheduler.Running.schedulingInformations.getGivenQuantumAmount()!=Scheduler.Running.schedulingInformations.getDefaultGivenQuantumAmount()) {
+				Scheduler.Running.schedulingInformations.setGivenQuantumAmount(Scheduler.Running.schedulingInformations.getDefaultGivenQuantumAmount());
+				}
+				/* Jesli tymczasowo podwyzszono priorytet procesu i proces wykorzystal swoj kwant czasu powinien wrocic do priorytetu bazowego*/
+				if (Scheduler.Running.schedulingInformations.getPriorityNumber()!=Scheduler.Running.schedulingInformations.getDefaultPriorityNumber()) {
+					Scheduler.Running.schedulingInformations.setPriorityNumber(Scheduler.Running.schedulingInformations.getDefaultPriorityNumber());
+				}
 			}
 			
 		}

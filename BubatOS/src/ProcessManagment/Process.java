@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.LinkedList;
+import CPU_Scheduling.Scheduler;
 
 public class Process {
 	public String processName;
@@ -17,6 +18,10 @@ public class Process {
 	public PageTab processTab;
 	public Memory processMemory;
 	int base, limit;
+	
+	
+	
+	
 	
 	public String fileName;
 	public Process(String name, int parentID) {
@@ -121,5 +126,72 @@ public class Process {
 		this.r2 = r2;
 	}
 	
+	/*
+	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA
+	 */
+	
+	public SchedulingInfo schedulingInformations;
+	
+	public class SchedulingInfo {
+	
+
+		private byte PriorityNumber;
+		private byte DefaultPriorityNumber;
+		private byte DefaultGivenQuantumAmount;
+		private byte GivenQuantumAmount;
+		private byte UsedQuantumAmount;
+		private short AwaitingQuantumLength;
+		
+		public SchedulingInfo(){
+			this.PriorityNumber=Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
+			this.DefaultPriorityNumber=PriorityNumber;
+			this.DefaultGivenQuantumAmount=Scheduler.DefaultQuantumToGive;
+			this.GivenQuantumAmount=this.DefaultGivenQuantumAmount;
+			this.UsedQuantumAmount=0;
+			this.AwaitingQuantumLength=0;
+		}
+		/*
+		 * SETTERY I GETTERY
+		 */
+		
+		public byte getPriorityNumber() {
+			return PriorityNumber;
+		}
+
+		public void setPriorityNumber(byte priorityNumber) {
+			PriorityNumber = priorityNumber;
+		}
+
+		public byte getGivenQuantumAmount() {
+			return GivenQuantumAmount;
+		}
+
+		public void setGivenQuantumAmount(byte givenQuantumAmount) {
+			GivenQuantumAmount = givenQuantumAmount;
+		}
+
+		public byte getUsedQuantumAmount() {
+			return UsedQuantumAmount;
+		}
+
+		public void setUsedQuantumAmount(byte usedQuantumAmount) {
+			UsedQuantumAmount = usedQuantumAmount;
+		}
+
+		public short getAwaitingQuantumLength() {
+			return AwaitingQuantumLength;
+		}
+
+		public void setAwaitingQuantumLength(short awaitingQuantumLength) {
+			AwaitingQuantumLength = awaitingQuantumLength;
+		}
+		/*
+		 * SETTERY I GETTERY - KONIEC
+		 */
+		
+	}
+	/*
+	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA - KONIEC
+	 */
 	
 }

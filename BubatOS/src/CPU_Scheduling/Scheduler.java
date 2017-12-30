@@ -11,6 +11,14 @@ import ProcessManagment.Process;
 
 /*
  * MODUŁ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
+ * Do zrobienia:
+ * - dokończenie metody Go
+ * - wątek postojowy?
+ * - uwzglednienie przypadku gdy proces skonczy wykonywac sie przed uplynieciem kwantu czasu(trzeba znalezc nowy), jak wyglada usuwanie watku
+ * Dodatkowe kwestie
+ * - czy jesli wlaczy sie watek postojowy to oddajemy sterowanie do shella? raczej tak, zeby procesor nie pozostawal w bezczynnosci
+ * - czy sa jakies rzeczy do robienia w czasie watku postojowego, rzekomo watek postojowy w Windows sluzy do zarzadzania pamiecia, ale tutaj nie musi
+ * - jak bedzie wygladac procesor, czy bedzie malutka oddzielna klasa z dwoma rejestrami dostepna publicznie, same statyczne publiczne pola?
  *  */
 
 

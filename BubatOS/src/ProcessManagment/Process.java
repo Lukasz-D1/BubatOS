@@ -140,18 +140,14 @@ public class Process {
 		private byte PriorityNumber;
 		private byte DefaultPriorityNumber;
 		private byte DefaultGivenQuantumAmount;
+	
+
 		private byte GivenQuantumAmount;
 		private byte UsedQuantumAmount;
 		private short AwaitingQuantumLength; //do wyrzucenia
 		private short SchedulersLastQuantumAmountCounter;
 		
-		public short getSchedulersLastQuantumAmountCounter() {
-			return SchedulersLastQuantumAmountCounter;
-		}
-
-		public void setSchedulersLastQuantumAmountCounter(short schedulersLastQuantumAmountCounter) {
-			SchedulersLastQuantumAmountCounter = schedulersLastQuantumAmountCounter;
-		}
+	
 
 		public SchedulingInfo(){
 			this.PriorityNumber=Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
@@ -164,6 +160,21 @@ public class Process {
 		/*
 		 * SETTERY I GETTERY
 		 */
+		public byte getDefaultGivenQuantumAmount() {
+			return DefaultGivenQuantumAmount;
+		}
+		
+		public short getSchedulersLastQuantumAmountCounter() {
+			return SchedulersLastQuantumAmountCounter;
+		}
+
+		public void setSchedulersLastQuantumAmountCounter(short schedulersLastQuantumAmountCounter) {
+			SchedulersLastQuantumAmountCounter = schedulersLastQuantumAmountCounter;
+		}
+		
+		public byte getDefaultPriorityNumber() {
+			return DefaultPriorityNumber;
+		}
 		
 		public byte getPriorityNumber() {
 			return PriorityNumber;

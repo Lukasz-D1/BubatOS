@@ -84,7 +84,7 @@ public class Scheduler {
 	/*
 	 * Running - Publiczne pole udostepniane wszystkim modulom, aby mogly operowac na aktualnie wykonywanym przez procesor procesie
 	 */
-	public Process Running=null;
+	public static Process Running=null;
 	
 	/*
 	 * ================================================================================================
@@ -292,8 +292,8 @@ public class Scheduler {
 	private void IsReadyThreadExpropriating(Process process) {
 		/* Jesli aktualnie jest wykonywany watek postojowy to i tak zostanie wywolana metoda ReadyThread zanim procesor wykona instrukcje, wiec
 		 * zaznaczamy flage tylko jesli */
-		if (this.Running!=null) {
-			if (process.schedulingInformations.getPriorityNumber()>this.Running.schedulingInformations.getPriorityNumber()) {
+		if (Scheduler.Running!=null) {
+			if (process.schedulingInformations.getPriorityNumber()>Scheduler.Running.schedulingInformations.getPriorityNumber()) {
 				this.IsExpropriated=true;
 			}
 		}
@@ -351,29 +351,33 @@ public class Scheduler {
 		
 		/*Zmienna pomocnicza zliczajaca ilosc wykonanych instrukcji w danym kwancie czasu */
 		byte InstructionsExecuted=0;
+		
+		
+		boolean WasExpriopriatedDuringQuantum=false;
 		/* Jesli cokolwiek w czasie "przerwy" zostalo dodane to i tak planista to zauwazy dzieki metodzie FindReadyThread
 		 * takze flaga musi byc wyzerowana*/
 		this.IsExpropriated=false;
 		
-		this.Running=this.FindReadyThread();
-		this.Running.setStan(Process.processState.Running);
+		Scheduler.Running=this.FindReadyThread();
+		Scheduler.Running.setStan(Process.processState.Running);
 		
 		while (InstructionsExecuted<Scheduler.InstructionsPerQuantum) {
 			
 			if (this.IsExpropriated==true) {
-				this.Running.setStan(Process.processState.Ready);
-				if(this.Running.schedulingInformations.getUsedQuantumAmount()>=1) {
-					this.RemoveFromReadyList(this.Running);
-					this.AddToReadyList(this.Running);
+				WasExpriopriatedDuringQuantum=true;
+				Scheduler.Running.setStan(Process.processState.Ready);
+				if(Scheduler.Running.schedulingInformations.getUsedQuantumAmount()>=1) {
+					this.RemoveFromReadyList(Scheduler.Running);
+					this.AddToReadyList(Scheduler.Running);
 				}
-				this.Running=this.FindReadyThread();
+				Scheduler.Running=this.FindReadyThread();
 			}
 			else {
 				
 			}
 			
-			if (this.Running!=null) {
-			this.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
+			if (Scheduler.Running!=null) {
+			Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
 			
 			//jesli Used
 			//sprawdzenie wywlaszczenia - po petli, gdy instrukcje beda juz wykonane? tak czy siak bedzie wykonywac proces pierwszy w kolejce, jesli zostanie wywlaszczony
@@ -385,6 +389,14 @@ public class Scheduler {
 			
 			/* Podbicie licznika wykonanych instrukcji */
 			InstructionsExecuted++;
+		}
+		if (WasExpriopriatedDuringQuantum==false) {
+			Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
+			Scheduler.Running.schedulingInformations.setUsedQuantumAmount((byte) (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()+1));
+			if (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()==Scheduler.Running.schedulingInformations.getGivenQuantumAmount()) {
+				
+			}
+			
 		}
 		QuantumAmountCounter++;
 	}

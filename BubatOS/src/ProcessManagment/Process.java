@@ -13,7 +13,7 @@ public class Process {
 	public enum processState{New, Running, Waiting, Ready, Terminated};
 	public processState state;
 	private static int processCounter = 0;
-	private int processPriority;
+	//private int processPriority;
 	public int r1, r2, programCounter;
 	public PageTab processTab;
 	public Memory processMemory;
@@ -38,12 +38,14 @@ public class Process {
 		
 		this.PPID = parentID;
 		this.state = processState.New;
-		this.processPriority = 0;
+		//this.processPriority = 0;
 		this.r1 = 0;
 		this.r2 = 0;
 		this.programCounter = 0;
 		this.base = 0;
 		this.limit = 0;		
+		/* Nadanie wartosci domyslnych polu odpowiadajacemu za przechowywanie informacji potrzebnych planiscie*/
+		this.schedulingInformations = new Process.SchedulingInfo();
 		
 		System.out.println("Utworzono proces o nazwie: " + processName +  ", i ID numer: " + PID);
 	} 
@@ -78,9 +80,9 @@ public class Process {
 		return processName;
 	}
 	
-	public int getProcessPriority() {
+	/*public int getProcessPriority() {
 		return processPriority;
-	} 
+	} */
 	
 	public int getProgramCounter() {
 		return programCounter;
@@ -114,9 +116,9 @@ public class Process {
 		this.processName = processName;
 	}
 	
-	public void setProcessPriority(int processPriority) {
+	/*public void setProcessPriority(int processPriority) {
 		this.processPriority = processPriority;
-	}
+	}*/
 	
 	public void setR1(int r1) {
 		this.r1 = r1;
@@ -140,8 +142,17 @@ public class Process {
 		private byte DefaultGivenQuantumAmount;
 		private byte GivenQuantumAmount;
 		private byte UsedQuantumAmount;
-		private short AwaitingQuantumLength;
+		private short AwaitingQuantumLength; //do wyrzucenia
+		private short SchedulersLastQuantumAmountCounter;
 		
+		public short getSchedulersLastQuantumAmountCounter() {
+			return SchedulersLastQuantumAmountCounter;
+		}
+
+		public void setSchedulersLastQuantumAmountCounter(short schedulersLastQuantumAmountCounter) {
+			SchedulersLastQuantumAmountCounter = schedulersLastQuantumAmountCounter;
+		}
+
 		public SchedulingInfo(){
 			this.PriorityNumber=Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
 			this.DefaultPriorityNumber=PriorityNumber;

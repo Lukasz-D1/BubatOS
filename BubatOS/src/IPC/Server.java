@@ -1,113 +1,86 @@
 package com.company;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Server implements Runnable{
-
-    private BufferedReader in;
-    private PrintWriter out;
-    private ServerSocket sock;
-    private Socket client;
-    private String message;
     private Queue<String> messageList = new LinkedList();
 
-    @Override
+    private Socket       socket = null;
+    private ServerSocket server = null;
+    private Thread       thread = null;
+    private DataInputStream  streamIn  =  null;
+    private DataOutputStream streamOut = null;
+
+    public Server(int port)
+    {  try
+    {  System.out.println("Binding to port " + port + ", please wait  ...");
+        server = new ServerSocket(port);
+        System.out.println("Server started: " + server);
+        start();
+    }
+    catch(IOException ioe)
+    {  System.out.println(ioe);
+    }
+    }
     public void run()
-    {
-        startServer(9999);
-        try {
-            Thread.sleep(1000);
+    {  while (thread != null)
+    {   try
+    {  System.out.println("Waiting for a client ...");
+        socket = server.accept();
+        System.out.println("Client accepted: " + socket);
+        open();
+        boolean done = false;
+        while (!done)
+        {  try
+        {  String line = streamIn.readUTF();
+            messageList.add(line);
+            done = line.equals(".bye");
         }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
+        catch(IOException ioe)
+        {  done = true;  }
         }
-        write("SIEMA");
-
+        close();
     }
-
-
-    public void startServer(int ID)
+    catch(IOException ie)
+    {  System.out.println("Acceptance Error: " + ie);  }
+    }
+    }
+    public void start()
+    {  if (thread == null)
+    {   thread = new Thread(this);
+        thread.start();
+    }
+    }
+    public void stop()
+    {  if (thread != null)
+    {  thread.stop();
+        thread = null;
+    }
+    }
+    public void open() throws IOException
+    {  streamIn = new DataInputStream(new
+            BufferedInputStream(socket.getInputStream()));
+    }
+    public void close() throws IOException
+    {  if (socket != null)    socket.close();
+        if (streamIn != null)  streamIn.close();
+    }
+    public void send(String msg)
     {
         try {
-            sock = new ServerSocket(ID);
+            streamOut.writeUTF(msg);
+            streamOut.flush();
         }
         catch (IOException ioe) {
-            System.err.println(ioe);
+            System.out.println(ioe.getMessage());
         }
     }
 
-    public void read()
-    {
-        try {
-            client = sock.accept();
-            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            if((message = in.readLine())!= null)
-            {
-                System.out.println(message);
-                messageList.add(message);
-            }
-           sock.close();
-        }catch (IOException ioe)
-        {
-            System.err.println(ioe);
-        }
+    public Queue<String> getMessageList() {
+        return messageList;
+    }
     }
 
-    public void write(String letter)
-    {
-        try {
-                while(true)
-                {
-                    client = sock.accept();
-                    PrintWriter pout = new PrintWriter(client.getOutputStream(),true);
-                    pout.print("cos");
-                }
-
-               // sock.close();
-
-
-
-        }
-        catch (IOException ioe) {
-            System.err.println(ioe);
-        }
-    }
-
-//    public static void main(String[] args)  {
-//        try {
-//            BufferedReader in;
-//            PrintWriter out;
-//            ServerSocket sock;
-//            Socket client;
-//
-//            sock = new ServerSocket(9090);
-//            System.out.println("Listening");
-//
-//            while (true) {
-//                client = sock.accept();
-//                // we have a connection
-//                PrintWriter pout = new PrintWriter(client.getOutputStream(), true);
-//                //in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-//
-//                //System.out.println(pout);
-//                in = new BufferedReader(new InputStreamReader(System.in));
-//                String string = in.readLine();
-//                pout.println(string);
-//
-//                client.close();
-//
-//            }
-//
-//        }
-//        catch (IOException ioe) {
-//            System.err.println(ioe);
-//        }
-//    }
-}

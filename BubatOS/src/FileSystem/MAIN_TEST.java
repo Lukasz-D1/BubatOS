@@ -5,11 +5,31 @@ import inodes.FileEntry;
 import inodes.Inode;
 public class MAIN_TEST {
 	public static void main(String[] args) throws InterruptedException {
-		Drive mainDrive = new Drive();
-		//Wyswitla wolne bloki dyskowe sposrod 32
 		
-		//System.out.println(mainDrive.openFile("p1", "txt"));
+		Drive mainDrive = new Drive();
+		
 		mainDrive.createFile("p1");
+		mainDrive.openFile("p1"); // robimy stan=false
+		mainDrive.openFile("p1");
+		mainDrive.writeFile("p1", "aaa");
+		mainDrive.readFile("p1", 4);
+		mainDrive.appendFile("p1", "bbbb");
+		mainDrive.readFile("p1", 6);
+		mainDrive.deleteFile("p1");
+		mainDrive.renameFile("p1", "p3");
+		mainDrive.createLink("p2", "p1");
+		
+		mainDrive.closeFile("p1");
+		mainDrive.renameFile("p1", "p3");
+		mainDrive.openFile("p3");
+		mainDrive.writeFile("p3", "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+		mainDrive.readFile("p3", 32);
+		mainDrive.closeFile("p3");
+		mainDrive.deleteFile("p3");
+		mainDrive.openFile("p2");
+		mainDrive.readFile("p2", 4);
+		mainDrive.closeFile("p2");
+		mainDrive.deleteFile("p2");
 		//mainDrive.createFile("p2");
 		mainDrive.ListDirectory();
 //		aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa //1 //32
@@ -30,8 +50,15 @@ public class MAIN_TEST {
 //		pppppppppppppppppppppppppppppppp //16
 //		rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr //17
 //		ssssssssssssssssssssssssssssssss //18
+		
+		//1024
+		String tys ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccccccccddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffffffffffffffffffff";
+		//992
+		String tys2 ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccccccccddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+		//960
+		String tys3 ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbccccccccccccccccccccccccccccccccdddddddddddddddddddddddddddddddd";
 		//576
-		String xd="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";//40->32->8a do bloku poœredniego
+		String xd="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";//40->32->8a do bloku poÅ›redniego
 		String xd_max="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 					+"ccccccccccccccccccccccccccccccccdddddddddddddddddddddddddddddddd"
 					+"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffffffffffffffffffff"
@@ -66,7 +93,7 @@ public class MAIN_TEST {
 //		mainDrive.ListDirectory();
 //		mainDrive.printDrive();
 //		mainDrive.deleteFile("p2");
-//		System.out.println("Po usuniêciu");
+//		System.out.println("Po usuniÄ™ciu");
 //		mainDrive.ListDirectory();
 //		mainDrive.printDrive();
 //		
@@ -120,10 +147,10 @@ public class MAIN_TEST {
 //			mainDrive.readFile("p2", 1);
 //			mainDrive.readFile("p2", 0);
 //			mainDrive.readFile("p2", 2);
-//			//zamkniêcie
+//			//zamkniÄ™cie
 //			mainDrive.closeFile("p2");
-//			//sprawdzenie poprawnoœæi close
-//			mainDrive.writeFile("p2", xd);//komunikat, ¿e ju¿ zamkniêty
+//			//sprawdzenie poprawnoÅ›Ä‡i close
+//			mainDrive.writeFile("p2", xd);//komunikat, Å¼e juÅ¼ zamkniÄ™ty
 			
 			//mainDrive.createFile("p3");
 			//mainDrive.openFile("p3");
@@ -135,7 +162,7 @@ public class MAIN_TEST {
 			//mainDrive.printDiskBlock(2);
 			//mainDrive.printDiskBlock(3);
 			
-		//TEST DOWI¥ZAÑ
+		//TEST DOWIÄ„ZAÅƒ
 		
 //		mainDrive.createLink("p2", "p1");
 //		mainDrive.ListDirectory();
@@ -143,25 +170,79 @@ public class MAIN_TEST {
 //		mainDrive.writeFile("p1", "asd");
 //		mainDrive.ListDirectory();
 //		mainDrive.closeFile("p1");
-//		mainDrive.writeFile("p2", "kada");
+//		mainDrive.writeFile("p2", "kada");//plik nie jest otwarty
 //		mainDrive.openFile("p2");
-//		mainDrive.appendFile("p2", "kada");
+//		mainDrive.appendFile("p2", "mada");
 //		mainDrive.ListDirectory();
 //		mainDrive.readFile("p2", 50);
 //		mainDrive.closeFile("p1");
-//		mainDrive.closeFile("p2");//komunikat ju¿ zamkniêty ->OK
+//		mainDrive.closeFile("p2");//komunikat juÅ¼ zamkniÄ™ty ->OK
 //		mainDrive.printInodeInfo("p2");
 //		mainDrive.deleteFile("p1");
 //		mainDrive.ListDirectory();
 //		mainDrive.openFile("p2");
 //		mainDrive.readFile("p2", 2);
 //		mainDrive.deleteFile("p2");
+//		mainDrive.appendFile("p2", "adam");
+//		mainDrive.readFile("p2", 10);
 //		mainDrive.closeFile("p2");
 //		mainDrive.deleteFile("p2");
 //		mainDrive.ListDirectory();
 		
-		////test odczytu 3
-//		mainDrive.createLink("p2", "p1");
+		
+		//TEST MAX LICZBY ZNAKÃ“W
+//		mainDrive.openFile("p1");
+//		mainDrive.writeFile("p1",xd_max);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.createFile("p2");
+//		mainDrive.openFile("p2");
+//		mainDrive.appendFile("p2", "adam333 77777777777777777777123456789");
+//		mainDrive.readFile("p2", 2);
+//		mainDrive.ListDirectory();
+//		mainDrive.writeFile("p2", "kuba5"); //nadpisanie poczÄ…tkowych danych
+//		//mainDrive.closeFile("p2");
+//		//mainDrive.openFile("p2");
+//		mainDrive.ListDirectory();
+//		mainDrive.readFile("p2", 33);
+//		
+//		//mainDrive.ListDirectory();
+//		mainDrive.printInodeInfo("p2");
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.appendFile("p1", xd);
+//		mainDrive.writeFile("p1", "adam111111111111111111111111111111");
+//		mainDrive.printInodeInfo("p1");
+		//mainDrive.printIndexBlockNumbers();
+		//mainDrive.printDiskBlock(0);
+				
+		
+		/*TEST WRITE I APPEND DO MAX*/
+		
+//		mainDrive.openFile("p1");
+//		mainDrive.writeFile("p1", tys3); //960+32(blok indeksowy)
+//		mainDrive.createFile("p2");
+//		mainDrive.openFile("p2");
+//		mainDrive.writeFile("p2", "FUGA GRAD            aaaaaaaaa22");
+//		mainDrive.readFile("p2", 30);
+//		mainDrive.readFile("p2", 2);
+//		mainDrive.appendFile("p2", "g");
+//		mainDrive.writeFile("p2", "5555");
+//		mainDrive.readFile("p2", 3);
+//		//mainDrive.printDrive();
+//		//mainDrive.printBitVector();
+//		//mainDrive.printInodeInfo("p2");
+//		//mainDrive.printDiskBlock(22);
+//		mainDrive.printInodeInfo("p2");
+//		mainDrive.printDiskBlock(31);
+//		mainDrive.printBitVector();
+//		//mainDrive.readFile("p1", 1024);
+//		//mainDrive.appendFile("p1", "1");
+//		////test odczytu 3
+////		mainDrive.createLink("p2", "p1");
 //		mainDrive.ListDirectory();
 //		mainDrive.openFile("p1");
 //		//117
@@ -169,6 +250,16 @@ public class MAIN_TEST {
 //		mainDrive.ListDirectory();
 //		mainDrive.readFile("p1", 40);
 //		mainDrive.readFile("p1", 400);
+		
+		
+		
+		/*TEST DLA MARCINA*/
+		
+		
+		
+		
+		
+		
 		
 		
 //		}

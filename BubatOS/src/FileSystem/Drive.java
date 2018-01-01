@@ -3,20 +3,8 @@ import java.io.File;
 import java.util.*;
 import inodes.FileEntry;
 import inodes.FileEntry.Types;
+
 public class Drive {
-//	public enum Op{
-//		O_RDONLNY	(0),
-//		O_WRONLY	(1),
-//		O_RDWR		(2)
-//		;
-//		private final int opCode;
-//		Op(int opCode){
-//			this.opCode = opCode;
-//		}
-//		public int getOpCode() {
-//	        return this.opCode;
-//	    }
-//	}
 	private static final int DRIVE_SIZE = 1024; //B 32B*32
 	private static final int DRIVE_BLOCK_SIZE = 32; //B
 	private static final int DRIVE_BLOCK_AMOUNT = 32;
@@ -29,6 +17,8 @@ public class Drive {
 	public Inode	[]  inodesTable;
 	public Hashtable<String,FileEntry> catalog;
 	
+	/*KONTENER POMOCNICZY*/
+	private ArrayList<Integer> IndexBlockNumbers;
 	/*--Constructor--*/
 	public Drive(){
 		drive = new char[DRIVE_SIZE];
@@ -46,10 +36,9 @@ public class Drive {
 		for(int i=0;i<DRIVE_SIZE;i++){
 			drive[i] = (char)0;
 		}
-		//tworzenie katalogu glownego i sciezki do niego
-		//np. /home - montowanie systemu plików 
+		IndexBlockNumbers = new ArrayList<Integer>();
 	}
-	//np. u¿ytkownik wpisze CR P1 40;
+	//np. uÅ¼ytkownik wpisze CR P1 40;
 	/*
 	 O_RDONLNY - tylko do odczytu (0)
 	 O_WRONLY - tylko do zapisu (1)
@@ -60,7 +49,7 @@ public class Drive {
 			if(bitVector[i] == 1)
 			{
 				bitVector[i] = 0;
-				//inicjalizacja zajêtego bloku 
+				//inicjalizacja zajÄ™tego bloku 
 				Arrays.fill(drive, i*32, i*32+32, (char)(-1));
 				--FREE_BLOCK_AMOUNT;
 				return i;
@@ -79,6 +68,7 @@ public class Drive {
 	}
 	public void createFile(String name){
 		int freeBlock = freeSpaceCheck();
+		System.out.println(freeBlock);
 		if(!catalog.containsKey(name) && freeBlock != -1){
 			System.out.println("Creating a file...");
 			FileEntry file = new FileEntry();
@@ -86,11 +76,10 @@ public class Drive {
 			Calendar cal = Calendar.getInstance();
 			file.name = name;
 			file.type_of_file = Types.FILE;
-			//zamkniêty
+			//zamkniÄ™ty
 			//file.stan = false;
-			file.currentPositionPtr=0;//zapis i odczyt od pocz¹tku pliku
-			//file.s = new Semaphore("semafor");
-			//nastêpny indeks tablicy
+			file.currentPositionPtr=0;//zapis i odczyt od poczÄ…tku pliku
+			//nastÄ™pny indeks tablicy
 			//file.inodeNum = inodesTable.size();
 			file.inodeNum = freeInodeIndex();
 			/*I-NODES*/
@@ -98,15 +87,15 @@ public class Drive {
 			inode.day = cal.get(Calendar.DAY_OF_MONTH);
 			inode.hour = cal.get(Calendar.HOUR_OF_DAY);
 			inode.minute = cal.get(Calendar.MINUTE);
-			//inode.type_of_file = Types.FILE;
 			inode.stan = false;
-			//inode.s =new Semaphore("semafor");
+			inode.s = new Semaphore(name);
+			
 			inode.LinkCounter = 1;//first link
 			inode.sizeF = 0;//B
-			//okreœlenie pierwszego numeru bloku dyskowego
+			//okreÅ›lenie pierwszego numeru bloku dyskowego
 			
 			inode.inode_table[0] = freeBlock;
-			inode.inode_table[1] = -1;//-1 oznacza, ¿e nie jest wykorzystywane adresowanie poœrednie
+			inode.inode_table[1] = -1;//-1 oznacza, Å¼e nie jest wykorzystywane adresowanie poÅ›rednie
 			catalog.put(name,file);
 			inodesTable[file.inodeNum] = inode;
 			//inodesTable.add(inode);
@@ -117,61 +106,86 @@ public class Drive {
 			System.out.println("Istnieje juz plik o takiej nazwie");
 		}
 		else if(freeBlock == -1){
-			System.out.println("Wszystkie bloki s¹ zajête");
+			System.out.println("Wszystkie bloki sÄ… zajÄ™te");
 		}
 		//if()
 		/*if(size < File.MAX_FILE_SIZE){
 			
 		}else{
-			System.out.println("Za du¿y rozmiar pliku");
+			System.out.println("Za duÅ¼y rozmiar pliku");
 		}*/
 	}
 	//Thread running;
-	public void openFile(String name){
-		//przegl¹da katalog i kopiuje odpowiedni wpis katalogowy do tablicy otwartych plików
-		//nale¿y sprawdziæ czy plik nie jest otwarty przez inny proces
-		//jeœli ochrona na to zezwala
-		//zwraca wskaznik do wpisu w tej tablicy, który jest u¿ywany przez pozosta³e operacje
-		//po otwarciu pliku kopia i-wêz³a jest przechowywana w pamiêci g³ównej
+	public void openFile(String name) throws InterruptedException{
+		//przeglÄ…da katalog i kopiuje odpowiedni wpis katalogowy do tablicy otwartych plikÃ³w
+		//naleÅ¼y sprawdziÄ‡ czy plik nie jest otwarty przez inny proces
+		//jeÅ›li ochrona na to zezwala
+		//zwraca wskaznik do wpisu w tej tablicy, ktÃ³ry jest uÅ¼ywany przez pozostaÅ‚e operacje
+		//po otwarciu pliku kopia i-wÄ™zÅ‚a jest przechowywana w pamiÄ™ci gÅ‚Ã³wnej
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			//F.s.V(); //arg metooda zwracajacy aktualnie wykonywany proces;
-			if(inodesTable[k].stan == true)
-				System.out.println("Plik jest ju¿ otwarty");
-				//return -1; //ju¿ otwarty
+			//if(inodesTable[k].stan == true)
+			if(inodesTable[k].s.isStan() == false || inodesTable[k].stan == true)
+			{
+				System.out.println("Plik jest juÅ¼ otwarty");
+				//return -1; //juÅ¼ otwarty
+			}
 			else
 			{
-				inodesTable[k].stan = true; //uzywany, operacje na semaforach???
+				//inodesTable[k].stan = true; //uzywany, operacje na semaforach???
+				//jesli stan semafora true to:
+				//opuszczenie semafora
+				if(Scheduler.Running !=null)
+				{
+					inodesTable[k].s.P(Scheduler.Running);
+				}
+				else{
+					//gdy nie ma procesÃ³w gotowych, a otwieranie jest wykonywane z poziomu shella
+					inodesTable[k].stan = true;
+				}
 				F.currentPositionPtr=0;
-				System.out.println("Pomyœlnie otwarto plik");
-				//return k; //zwraca numer i-wêz³a
+				System.out.println("PomyÅ›lnie otwarto plik");
+				//return k; //zwraca numer i-wÄ™zÅ‚a
 			}
 		}
 		else
 			System.out.println("Plik o takiej nazwie nie istnieje");
 		//return -2; //brak pliku o takiej nazwie
 	}
-	public void closeFile(String name){
-		//usuwa wpis z tablicy otwartych plików
+	public void closeFile(String name) throws InterruptedException{
+		//usuwa wpis z tablicy otwartych plikÃ³w
 		/*
-		 WYKONAÆ JESZCZE OPERACJE:
-		 -zmiany stanu pliku(odblokowanie), dzia³anie na semaforach
-		 -jak procesor umiera to mo¿e np. wykoanæ metodê close na pliku
-		 i wtedy zmieniæ jego stan
+		 WYKONAÄ† JESZCZE OPERACJE:
+		 -zmiany stanu pliku(odblokowanie), dziaÅ‚anie na semaforach
+		 -jak procesor umiera to moÅ¼e np. wykoanÄ‡ metodÄ™ close na pliku
+		 i wtedy zmieniÄ‡ jego stan
 		 */
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			if(inodesTable[k].stan == false)
-				System.out.println("Plik jest ju¿ zamkniety");
-				//return -1; //ju¿ zamkniêty
+			//if(inodesTable[k].stan == false)
+			if(inodesTable[k].s.isStan() == true && inodesTable[k].stan == false){
+				System.out.println("Plik jest juÅ¼ zamkniÄ™ty");
+			}
+			//dla shella
+			else if(inodesTable[k].stan == false){
+				System.out.println("Plik jest juÅ¼ zamkniÄ™ty");
+			}
 			else
 			{
-				inodesTable[k].stan = false; //uzywany, operacje na semaforach???
-				System.out.println("Pomyœlnie zamkniêto plik");
+				
+				if(inodesTable[k].stan == true)
+				{
+					inodesTable[k].stan = false; //shell
+				}
+				else
+				{
+					inodesTable[k].s.V();
+				}
+				System.out.println("PomyÅ›lnie zamkniÄ™to plik");
 				//return k;
 			}
 		}
@@ -179,27 +193,30 @@ public class Drive {
 			System.out.println("Plik o takiej nazwie nie istnieje");
 		//return -2;
 	}
-	//DZIA£A LEGITNIE, ALE CZY CHODZI O TAKI SPOSÓB???
-	//ustaliæ czy podawaæ miejsce, od októrego mamy wpisaywaæ i ile
+	//DZIAÅA LEGITNIE, ALE CZY CHODZI O TAKI SPOSÃ“B???
+	//ustaliÄ‡ czy podawaÄ‡ miejsce, od oktÃ³rego mamy wpisaywaÄ‡ i ile
 	public void writeFile(String name, String data){
 		/*
-		 WYKONAÆ JESZCZE OPERACJÊ:
-		 -sprawdziæ stan pliku przed podjêciem akcji
+		 WYKONAÄ† JESZCZE OPERACJÄ˜:
+		 -sprawdziÄ‡ stan pliku przed podjÄ™ciem akcji
 		  
 		 */
-		//wywo³anie operacji open()
+		//wywoÅ‚anie operacji open()
 		//pisanie sekwencyjne
 		//wskaznik za nowo napisanymi danymi
-		//dane zapisuje siê w pobranym od zarz¹dcy obszarów wolnych bloku indeksowym
-		//umieszcza siê go w i-tej pozycji
+		//dane zapisuje siÄ™ w pobranym od zarzÄ…dcy obszarÃ³w wolnych bloku indeksowym
+		//umieszcza siÄ™ go w i-tej pozycji
 		//system przechowuje wskaznik pisania okreslajacy miejsce w pliku
 		//int currentPositionPtr -> ustawiany na koncu pliku;
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			if(inodesTable[k].stan == true) //mo¿e sprawdzanie stanu semafora
+			//if(inodesTable[k].stan == true) //moÅ¼e sprawdzanie stanu semafora
+			if(inodesTable[k].s.isStan() == false || inodesTable[k].stan == true)
 			{
+				deleteContent(name);//gwarancja nadpisania danych
+				F.currentPositionPtr = 0;
 				int dataSize = data.length();//inodesTable.get(k).sizeF;
 				if(dataSize <= 32)
 				{
@@ -208,6 +225,7 @@ public class Drive {
 					{
 						drive[directBlockNum*32+i] = data.charAt(i);
 					}
+					//inodesTable[k].sizeF = inodesTable[k].sizeF > data.length() ? inodesTable[k].sizeF : data.length();
 					inodesTable[k].sizeF = data.length();
 					//closeFile(name);
 				}
@@ -217,10 +235,11 @@ public class Drive {
 				else if(((dataSize+32-1)/32) <= FREE_BLOCK_AMOUNT) //+1
 				{
 					int restSize = dataSize - 32;
-					//liczba s³u¿y do okraniczenia wpisów nr bloków indekowych
+					//liczba sÅ‚uÅ¼y do ograniczenia wpisÃ³w nr blokÃ³w indekowych
 					int n = (restSize+32-1)/32;
 					int directBlockNum = inodesTable[k].inode_table[0];
 					int inDirectBlockNum = freeSpaceCheck();
+					IndexBlockNumbers.add(inDirectBlockNum);
 					//if(directBlockNum  != -1)
 					//{
 						//tylko zapis
@@ -254,14 +273,12 @@ public class Drive {
 						inodesTable[k].hour = cal.get(Calendar.HOUR_OF_DAY);
 						inodesTable[k].minute = cal.get(Calendar.MINUTE);
 						
+						//inodesTable[k].sizeF = inodesTable[k].sizeF > data.length() ? inodesTable[k].sizeF : data.length();
 						inodesTable[k].sizeF = data.length();
-						
-						//closeFile(name);
-					//}
 				}
 				else
 				{
-					System.out.println("B³ad, brak miejsca na dysku");
+					System.out.println("BÅ‚ad, brak miejsca na dysku");
 				}
 			}
 			else
@@ -275,12 +292,12 @@ public class Drive {
 		}
 	}
 	public void appendFile(String name, String newData){
-		//wypada ustawiæ wskaznik na koncu pliku
+		//wypada ustawiÄ‡ wskaznik na koncu pliku
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			if(inodesTable[k].stan == true)
+			if(inodesTable[k].s.isStan() == false || inodesTable[k].stan == true)
 			{
 				boolean flaga=false; //czy jest miejsce
 				
@@ -317,10 +334,11 @@ public class Drive {
 					}
 					//if(((newDataSize+32-1)/32) <= FREE_BLOCK_AMOUNT+1) 
 					//{
-					//liczba s³u¿y do ograniczenia wpisów nr bloków indekowych
+					//liczba sÅ‚uÅ¼y do ograniczenia wpisÃ³w nr blokÃ³w indekowych
 					int n = (newDataSize+32-1)/32;
 					//int directBlockNum = inodesTable[k].inode_table[0];
 					int inDirectBlockNum = freeSpaceCheck();
+					IndexBlockNumbers.add(inDirectBlockNum);
 					//tylko zapis
 					inodesTable[k].inode_table[1] = inDirectBlockNum;
 					//wpisanie nr bloku dyskowego do bloku indeksowego
@@ -358,7 +376,7 @@ public class Drive {
 					int restSize = acDataSize - 32;
 					//System.out.println("acDataSize "+acDataSize);
 					//System.out.println("restSize "+restSize);
-					int indexBlockAmount = (restSize+32-1)/32;//liczba wpisów w bloku indeksowym
+					int indexBlockAmount = (restSize+32-1)/32;//liczba wpisÃ³w w bloku indeksowym
 					//System.out.println("indexBlockAmount "+indexBlockAmount);
 					int inDirectBlockNum3 = inodesTable[k].inode_table[1];
 					//System.out.println("inDirectBlockNum3 "+inDirectBlockNum3);
@@ -428,7 +446,7 @@ public class Drive {
 				}
 				if(!flaga)
 				{
-					System.out.println("B³ad, brak miejsca na dysku");
+					System.out.println("BÅ‚ad, brak miejsca na dysku");
 				}
 			}
 			else
@@ -442,22 +460,22 @@ public class Drive {
 		}
 	}
 	public void readFile(String name, int amount){
-		//wywo³anie operacji open()
+		//wywoÅ‚anie operacji open()
 		//ustawienie wskaznika na poczatku pliku
 		
 		//czytanie sekwencyjne
-		//podczas odczytania wskaznik wedruje na koniec i okreœla nowa operacje wejscia-wyjscia
-		//system przechowuje wskaznik czytania okreslajacy miejsce nastêpnego czytania w pliku
+		//podczas odczytania wskaznik wedruje na koniec i okreÅ›la nowa operacje wejscia-wyjscia
+		//system przechowuje wskaznik czytania okreslajacy miejsce nastÄ™pnego czytania w pliku
 		
 		//podamy ile plik ma zawartosci
-		//u¿ytkownik nie zawsze czyta ca³¹ zawartoœæ
-		//wskaznik bie¿¹cej pozycji bêdzie potrzebny, gdy bêdzie chcia³ wznowiæ czytanie.
+		//uÅ¼ytkownik nie zawsze czyta caÅ‚Ä… zawartoÅ›Ä‡
+		//wskaznik bieÅ¼Ä…cej pozycji bÄ™dzie potrzebny, gdy bÄ™dzie chciaÅ‚ wznowiÄ‡ czytanie.
 		//int currentPositionPtr;
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			if(inodesTable[k].stan == true)
+			if(inodesTable[k].s.isStan() == false || inodesTable[k].stan == true)
 			{
 				String content = "";
 				int s = inodesTable[k].sizeF;
@@ -471,8 +489,8 @@ public class Drive {
 					{
 						content += drive[directBlockNum*32+i];
 					}
-					if(amount >=32 ) //na koñcu pliku
-						F.currentPositionPtr = 32;
+					if(amount+F.currentPositionPtr >=s ) //na koÅ„cu pliku
+						F.currentPositionPtr = s;
 					else	
 						F.currentPositionPtr += amount;
 					//System.out.println("F.currentPositionPtr new "+F.currentPositionPtr);
@@ -483,7 +501,7 @@ public class Drive {
 					int inDirectBlockNum = inodesTable[k].inode_table[1];
 					int pom = amount;
 					//int restSize = s - 32;
-					//liczba s³u¿y do ograniczenia wpisów nr bloków indekowych
+					//liczba sÅ‚uÅ¼y do ograniczenia wpisÃ³w nr blokÃ³w indekowych
 					//int n = (restSize+32-1)/32;
 					int in=F.currentPositionPtr;
 					int in_fin = in;
@@ -519,7 +537,7 @@ public class Drive {
 						//restSize < 5?n-1:n-2)
 						int j =(((in)/32)-1);
 						//System.out.println("j "+j);
-						int z=j;//¿eby tylko raz, bo j bêdzie inkrementowane
+						int z=j;//Å¼eby tylko raz, bo j bÄ™dzie inkrementowane
 						//System.out.println("(restSize+32-1)/32="+((restSize+32-1)/32));
 						//System.out.println("((F.currentPositionPtr)/32)-1="+(((F.currentPositionPtr)/32)-1));
 						//System.out.println("(F.currentPositionPtr+s-restSize)/32)-1="+(((F.currentPositionPtr+s-restSize)/32)-1));
@@ -585,15 +603,15 @@ public class Drive {
 		}
 	}
 	public void deleteFile(String name){
-		//sprawdziæ czy nie wystêpuje w spisie tablicy otwartych plików
-			//je¿eli wystêpuje to wywyo³aæ closeFIle()
+		//sprawdziÄ‡ czy nie wystÄ™puje w spisie tablicy otwartych plikÃ³w
+			//jeÅ¼eli wystÄ™puje to wywyoÅ‚aÄ‡ closeFIle()
 		//przeszukanie katalogu w celu odnalezienia wpisu
-		//likwiduje siê wpis katalogowy
+		//likwiduje siÄ™ wpis katalogowy
 		if(catalog.containsKey(name))
 		{
 			FileEntry F = catalog.get(name);
 			int k = F.inodeNum;
-			if(inodesTable[k].stan == false)
+			if(inodesTable[k].s.isStan() == true && inodesTable[k].stan == false)
 			{
 				if(--inodesTable[k].LinkCounter > 0)
 				{
@@ -631,21 +649,24 @@ public class Drive {
 							int from = (int)drive[inDirectBlockNum*32+pom];
 							//System.out.println("from_del:" +from);
 							Arrays.fill(drive, from*32, from*32+32, (char)0);
+							bitVector[from] = 1;
 							++FREE_BLOCK_AMOUNT;
 							pom++;
 						}
 						Arrays.fill(drive, inDirectBlockNum*32, inDirectBlockNum*32+32, (char)0);
+						bitVector[inDirectBlockNum] = 1;
 						++FREE_BLOCK_AMOUNT;
 						
+						IndexBlockNumbers.remove(IndexBlockNumbers.indexOf(inDirectBlockNum));
 						inodesTable[k]=null;
 						catalog.remove(name);
 					}
 				}
-				System.out.println("Plik zosta³ usuniêty");
+				System.out.println("Plik zostaÅ‚ usuniÄ™ty");
 			}
 			else
 			{
-				System.out.println("Plik jest wykorzystywany! Nie mo¿na go teraz usun¹æ");
+				System.out.println("Plik jest wykorzystywany! Nie moÅ¼na go teraz usunÄ…Ä‡");
 			}
 		}
 		else
@@ -655,8 +676,24 @@ public class Drive {
 	}
 	public void renameFile(String name, String newName){
 		if(catalog.containsKey(name)){
-			catalog.get(name).name = newName;
-			catalog.put(newName, catalog.remove(name));
+			if(!catalog.containsKey(newName))
+			{
+				FileEntry F = catalog.get(name);
+				int k = F.inodeNum;
+				if(inodesTable[k].s.isStan() == true && inodesTable[k].stan == false)
+				{
+					catalog.get(name).name = newName;
+					catalog.put(newName, catalog.remove(name));
+				}
+				else
+				{
+					System.out.println("Plik jest wykorzystywany! Nie moÅ¼na zmieniÄ‡ nazwy");
+				}
+			}
+			else
+			{
+				System.out.println("Nowa nazwa juÅ¼ wystÄ™puje");
+			}
 		}
 		else
 			System.out.println("Plik o tej nazwie nie istnieje");
@@ -664,22 +701,21 @@ public class Drive {
 	public void createLink(String newName, String name){
 		if(catalog.containsKey(name)){
 			if(!catalog.containsKey(newName)){
-				System.out.println("OK");
 				FileEntry newF = new FileEntry();
 				FileEntry F = catalog.get(name);
 				newF.name = newName;
 				newF.inodeNum = F.inodeNum;
 				newF.currentPositionPtr = F.currentPositionPtr;
 				inodesTable[F.inodeNum].LinkCounter++;
-				//semafor pozostaje bez zmian i tymczasowe pole stan równie¿
+				//semafor pozostaje bez zmian i tymczasowe pole stan rÃ³wnieÅ¼
 				newF.type_of_file = Types.LINK;
 				catalog.put(newName,newF);
-				//pamiêteæ o odycji delete
+				//pamiÄ™teÄ‡ o odycji delete
 				//i o zmianie nazwy
 			}
 			else
 			{
-				System.out.println("Plik o tej nazwie ju¿ istnieje. Nie mo¿na utworzyæ dowi¹zania!");
+				System.out.println("Plik o tej nazwie juÅ¼ istnieje. Nie moÅ¼na utworzyÄ‡ dowiÄ…zania!");
 			}
 		}
 		else
@@ -689,7 +725,7 @@ public class Drive {
 	}
 //	public void unlinkFile(String location){//int inode, String name, String ext){
 //
-//		//usuwa dowi¹zania do pliku
+//		//usuwa dowiÄ…zania do pliku
 //	}
 //	/*FUNCKCJE KATALOGU*/
 ////	public boolean searchFile(String name, String ext){
@@ -704,7 +740,7 @@ public class Drive {
 		else
 			return "0"+Integer.toString(t);
 	}
-	//wypisz zawartoœæ katalogu
+	//wypisz zawartoÅ›Ä‡ katalogu
 	public void ListDirectory(){
 		//number of hard links, owner, size, last-modified date and filename
 		System.out.println("Directory of root: ");
@@ -722,27 +758,71 @@ public class Drive {
 	}
 	/*----POMOCNICZE FUNKCJE----*/
 	
-	public void printBitVector(){
-		for(int i=0;i < bitVector.length;i++){
-			System.out.println("["+i+"]=" + bitVector[i]);
-		}
-	}
+	public String printBitVector(){
+        String zwrot = "";
+        for(int i=0;i < bitVector.length;i++){
+            System.out.println("["+i+"]=" + bitVector[i]);
+            zwrot+="["+i+"]=" + bitVector[i]+"\n";
+        }
+        return zwrot;
+    }
 	public void printDrive(){
+		boolean check;
 		for(int i=0;i < drive.length;i++){
-			System.out.println("["+i+"]="+drive[i]);
+			check=false;
+			for(Integer e : IndexBlockNumbers){
+				if(e.equals(i/32)){
+					check = true;
+					break;
+				}
+			}
+			if(check)
+			{
+				if(drive[i] >=0 && drive[i] <= 32)
+					System.out.println("*["+i+"]="+(int)drive[i]);
+				else
+					System.out.println("*["+i+"]="+drive[i]);
+			}
+			else
+				System.out.println("["+i+"]="+drive[i]);
 		}
 	}
 	public void printDiskBlock(int nr){
+		boolean check=false;
 		System.out.println("Blok dyskowy nr: "+nr);
 		if(nr<=32 && nr >= 0)
 		{
 			for(int i=nr*32;i<(nr*32+32);i++)
-				System.out.println("["+i+"]="+drive[i]);
+			{
+				for(Integer e : IndexBlockNumbers)
+				{
+					if(e.equals(nr)){
+						check = true;
+						break;
+					}
+				}
+				if(check)
+				{
+					if(drive[i] >=0 && drive[i] <= 32)
+						System.out.println("*["+i+"]="+(int)drive[i]);
+					else
+						System.out.println("*["+i+"]="+drive[i]);
+				}
+				else{
+					System.out.println("["+i+"]="+drive[i]);
+				}
+			}
 		}
 		else
 		{
 			System.out.println("Numer poza zakresem");
 		}
+	}
+	public void printIndexBlockNumbers(){
+		for(Integer e : IndexBlockNumbers)
+			System.out.print(e +", ");
+		System.out.println();
+		
 	}
 	public void printInodeInfo(String name){
 		if(catalog.containsKey(name)){
@@ -757,7 +837,7 @@ public class Drive {
 			//System.out.println(">Type: "+inodesTable[k].type_of_file);
 			System.out.println(">LinkCounter: "+inodesTable[k].LinkCounter);
 			System.out.println(">I-node table:\n >[0]->blok dyskowy: "+inodesTable[k].inode_table[0]);
-			int l = inodesTable[k].inode_table[1] == -1?-1:1;
+			//int l = inodesTable[k].inode_table[1] == -1?-1:1;
 			System.out.println(" >[1]->blok indeksowy: "+
 					(
 						inodesTable[k].inode_table[1] == -1?"brak"
@@ -771,10 +851,41 @@ public class Drive {
 			System.out.println("Nie ma pliku o podanej nazwie");
 		}
 	}
+	private void deleteContent(String name){
+		//usuwa tylko treÅ›Ä‡ pliku (pozostawia tylko pierwszy blok dyskowy)
+		FileEntry F = catalog.get(name);
+		int k = F.inodeNum;
+
+			int indexAmount = inodesTable[k].sizeF > 32 ? 2:1;
+			int directBlockNum,inDirectBlockNum;
+					
+			if(indexAmount == 1)
+			{
+				directBlockNum = inodesTable[k].inode_table[0];
+				Arrays.fill(drive, directBlockNum*32, directBlockNum*32+32, (char)-1);
+			}
+			else if(indexAmount == 2)
+			{
+				directBlockNum = inodesTable[k].inode_table[0];
+				Arrays.fill(drive, directBlockNum*32, directBlockNum*32+32, (char)-1);
+						
+				inDirectBlockNum = inodesTable[k].inode_table[1];
+				inodesTable[k].inode_table[1] = -1;//usuwamy
+				int pom=0;
+				while((int)drive[inDirectBlockNum*32+pom] != 65535)
+				{
+					int from = (int)drive[inDirectBlockNum*32+pom];
+					Arrays.fill(drive, from*32, from*32+32, (char)0);
+					bitVector[from] = 1;
+					++FREE_BLOCK_AMOUNT;
+					pom++;
+				}
+				Arrays.fill(drive, inDirectBlockNum*32, inDirectBlockNum*32+32, (char)0);
+				bitVector[inDirectBlockNum] = 1;
+				++FREE_BLOCK_AMOUNT;
+						
+				IndexBlockNumbers.remove(IndexBlockNumbers.indexOf(inDirectBlockNum));
+			}
+			inodesTable[k].sizeF = 0;
+	}
 }
-
-
-
-
-
-

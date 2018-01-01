@@ -62,7 +62,7 @@ public final class Memory {
 	}
 
 	// funkcja podająca aktualny stan pamięci
-	static char[][] getAll() {
+	public static char[][] getAll() {
 		char[][] ret = new char[4][16];
 		for (byte i = 0; i != 4; ++i) {
 			for (byte j = 0; j != 16; ++j) {

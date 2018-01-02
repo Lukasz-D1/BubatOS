@@ -180,7 +180,7 @@ public class Interpreter
     /*_______________________________________________________________*/    
         }else if(command[0].equals("WF")) //Wpisywanie do pliku
         {
-            writeFile(command[1],read(command[2],command[3]));//Sprawdzić nazwę funkcji odpowiedzialną za czytanie z pamięci.
+            writeFile(command[1],read(command[2],command[3]));
             commandCounter=commandCounter+5+command[1].length()+command[2].length()+command[3].length();
     /*_______________________________________________________________*/
         }else if(command[0].equals("CP")) //Tworzenie procesu

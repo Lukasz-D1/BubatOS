@@ -2,16 +2,94 @@ import java.util.List;
 import java.util.LinkedList;
 
 public class ProcessManagment {
+	// Drzewo (lista) ze wszystkimi procesami.
 	public List<Process> processList = new LinkedList<Process>();
-	
-	private Process mainProcess;
-	
+
+	// Proces główny startujący wraz z systemem.
+	public Process mainProcess;
+
+	@SuppressWarnings("static-access")
 	public ProcessManagment() {
-		mainProcess = new Process("init",0);	
+		// Alokacja pamięci - do dodania. Łata.
+		Memory memory = new Memory();
+		
+		// Tworzenie procesu init - głównego procesu uruchamianego w trakcie startu systemu.
+		// Konieczna deklaracja instancji obiektu ProcessManagment w main.
+		mainProcess = new Process("init", 0, memory);
+		
+		// Ustawienie stanu procesu init na Gotowy.
 		mainProcess.setStan(mainProcess.state.Ready);
+		
+		//Dodanie procesu do listy procesów.
 		processList.add(mainProcess);
+	}
+
+	// Tworzenie nowego procesu na zasadach Unixa - kopia rodzica. Funkcja fork.
+	// Działanie: Process nowy_proces = process_managment.fork(rodzic);
+	// Pierwszym rodzicem zawsze init.
+	// Modyfikacja pól stworzonego procesu: nowy_proces.setProcessName("nazwa");
+	// Zwrócić uwagę na to, że ID procesu zawsze będzie dobrze nadawane - statyczne pole licznik procesów.
+	public Process fork(Process parent) {
+		// Łata pamięci.
+		Memory memory = new Memory();
+		
+		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
+		Process process = new Process(parent.getProcessName(),parent.getPID(), memory);
+		
+		// Dodanie procesu do listy procesów.
+		processList.add(process);
+		
+		// Dodanie procesu do listy dzieci procesu.
+		parent.processChildrenList.add(process);
+		
+		// Zwrócenie procesu umożliwiające wykonywanie operacji w sposób uproszczony.
+		return process;
 	}
 	
 	
+	// Metoda odpowiedzialna za usunięcie danego procesu. Usuwamy go z listy, ustawiamy stan na Terminated.
+	// Zmieniamy ID rodzica na proces init.
+	// Łata ze zwalnianiem pamięci.
+	public void kill(Process proToKill) { 
+		proToKill.state = Process.processState.Terminated;
+		 for(Process pro : proToKill.processChildrenList){
+			 pro.setPPID(0);
+		 }
+		 
+		 for(Process pro : processList){
+			 if(pro.getPID() == proToKill.getPID()){
+				 processList.remove(pro);
+			 }
+		 }
+	}
+	
+	// Zwróć proces po nazwie. UWAGA! Nie jest dodawany do listy wszystkich procesów - czy będzie to potrzebne?
+	public Process getProcessByName(String name){
+		Process process = new Process();
+		for(Process pro : processList){
+			if(pro.getProcessName() == name){
+				process = pro;
+			}
+		}
+		return process;
+	}
+	
+	// Zwróć proces po ID. UWAGA! Nie jest dodawany do listy wszystkich procesów - czy będzie to potrzebne?
+	public Process getProcessByID(int id){
+		Process process = new Process();
+		for(Process pro : processList){
+			if(pro.getPID() == id){
+				process = pro;
+			}
+		}
+		return process;
+	}
+	
+	// Wyświetlanie wszystkich procesów aktualnie istniejących w systemie.
+	public void ps(){
+		for(Process pro : processList){
+			pro.printProcess();
+			}
+	}
 	
 }

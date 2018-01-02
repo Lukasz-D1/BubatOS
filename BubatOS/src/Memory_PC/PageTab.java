@@ -1,39 +1,109 @@
 package Memory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class PageTab {
 	byte[] tab; // tablica numerów stron, w których są dane procesu
 
-	// standardowy konstruktor
-	PageTab(char data[]) {
-		tab = MassMemory.load(data);
-	}
+	//Poniższe 3 zmienne służą do wyciągania komend
+	int lastCommand = -1;
+	byte comP = 0;
+	byte comD = 0;
 
-	// konstruktor, który poza miejscem dla data rezerwuje n znaków
-	PageTab(char[] data, int n) {
-		char[] data2 = new char[data.length + n];
-		for (short i = 0; i != data.length; ++i) {
-			data2[i] = data[i];
+	public PageTab(String fileName, int size) throws IOException {
+		FileReader Rr = new FileReader(fileName);
+		BufferedReader BRr = new BufferedReader(Rr);
+		String str = "";
+		String line;
+		while ((line = BRr.readLine()) != null) {
+			if (line != "HX" && line != "hx") {
+				line += "\n";
+			}
+			str += line;
+			System.out.print(line);
 		}
-		n += data.length;
-		for (short i = (short) data.length; i != n; ++i) {
+		char data[] = str.toCharArray();
+		char[] data2 = new char[size];
+		for (short i = 0; i != data.length; ++i) {
+			data2[i] = str.charAt(i);
+		}
+		for (short i = (short) data.length; i != size; ++i) {
 			data2[i] = 0;
 		}
 		tab = MassMemory.load(data);
 	}
 
-	protected void finalize() {
+	public void finalize() {
 		MassMemory.clear(tab);
 	}
-	
-	
-	public String readString(int ad, int amount) {
-		return new StringBuilder().append(read(ad,amount)).toString();
+
+	//funkcja zwracająca komendę o numerze n
+	public List<String> getCommand(int n) {
+		List<String> ret = new ArrayList<String>();
+		if (++lastCommand != n) {
+			lastCommand = n;
+			int readCommands = 0;
+			for (comP = 0;; ++comP) {
+				if (readCommands == n) {
+					break;
+				}
+				for (comD = 0; comD != 16; ++comD) {
+					if (readCommands == n)
+						break;
+					char c = Memory.read(tab[comP], comD);
+					if (c == 10) {
+						++readCommands;
+					}
+				}
+			}
+		}
+		String str = "";
+		while (true) {
+			for (; comD != 16; comD++) {
+				if (str == "HX" || str == "hx") {
+					ret.add(str);
+					comD++;
+					if (comD > 15) {
+						++comP;
+						comD -= 16;
+					}
+					return ret;
+				}
+				char c = Memory.read(tab[comP], comD);
+				if (c == 10) {
+					ret.add(str);
+					comD++;
+					if (comD > 15) {
+						++comP;
+						comD -= 16;
+					}
+					return ret;
+				} else if (c == 32) {
+					ret.add(str);
+					str = "";
+				} else {
+					str += c;
+				}
+			}
+			comD = 0;
+			++comP;
+		}
 	}
-	
+
+	// metoda read w wersji zwracającej String
+	public String readString(int ad, int amount) {
+		return new StringBuilder().append(read(ad, amount)).toString();
+	}
+
+	// metoda write w akceptująca dane w formie String
 	public void write(int ad, String data) {
 		write(ad, data.toCharArray());
 	}
-	
+
 	// metoda odczytująca amount znaków zaczynając od adresu ad
 	public char[] read(int ad, int amount) {
 		if (ad + amount >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
@@ -148,10 +218,10 @@ public class PageTab {
 			Memory.write(p, d, part);
 		} else { // zapisywanie na jednej stronie
 			byte p = tab[ad / 16];
-			System.out.println("ad="+ad);
+			System.out.println("ad=" + ad);
 			System.out.println("ad / 16 =" + ad / 16);
 			byte d = (byte) (ad % 16);
-			System.out.println("d="+d);
+			System.out.println("d=" + d);
 			byte n = (byte) (data.length);
 			char[] part = new char[n];
 			for (byte i = 0; i != n; ++i) {

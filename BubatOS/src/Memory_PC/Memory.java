@@ -2,6 +2,17 @@ package Memory;
 
 public final class Memory {
 
+	// funkcja podająca aktualny stan pamięci, jedyna publiczna metoda w tej klasie
+	static public char[][] getAll() {
+		char[][] ret = new char[4][16];
+		for (byte i = 0; i != 4; ++i) {
+			for (byte j = 0; j != 16; ++j) {
+				ret[i][j] = frames[i * 16 + j];
+			}
+		}
+		return ret;
+	}
+
 	private static short addr[] = { -1, -1, -1, -1 }; // adresy logiczne stron znajdujących się w poszczególnych ramkach
 	private static byte ws[] = { -1, -1, -1 }; // working set – zbiór roboczy
 	private static byte current = 0; // indeks aktualnie rozpatrywanego elemntu zbioru roboczego
@@ -10,6 +21,7 @@ public final class Memory {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0 };
 
+	//metoda zapisująca, wykorzystywana wewnątrz modułu zarządzania pamięcią
 	static void write(byte p, byte d, char[] data) {
 		for (byte i = 0; i != 4; ++i) {
 			if (addr[i] == p) {
@@ -37,8 +49,7 @@ public final class Memory {
 		return;
 	}
 
-	// funkcja podająca n znaków, zaczynając od strony o adresie logicznym p i
-	// offsecie d
+	//metoda odczytująca, wykorzystywana wewnątrz modułu zarządzania pamięcią
 	static char[] read(byte p, byte d, byte n) {
 		char ret[] = new char[n];
 		for (byte i = 0; i != 4; ++i) {
@@ -60,17 +71,23 @@ public final class Memory {
 		current %= 3;
 		return ret;
 	}
-
-	// funkcja podająca aktualny stan pamięci
-	public static char[][] getAll() {
-		char[][] ret = new char[4][16];
+	
+	static char read(byte p, byte d) {
 		for (byte i = 0; i != 4; ++i) {
-			for (byte j = 0; j != 16; ++j) {
-				ret[i][j] = frames[i * 16 + j];
+			if (addr[i] == p) {
+				ws[current] = i;
+				++current;
+				current %= 3;
+				return frames[i * 16 + d];
 			}
 		}
+		load(p);
+		char ret=frames[ws[current] * 16 + d];
+		++current;
+		current %= 3;
 		return ret;
 	}
+
 
 	private static void load(short p) {
 		byte i = 0;

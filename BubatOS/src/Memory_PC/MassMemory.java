@@ -42,7 +42,8 @@ public final class MassMemory {
 	//pomocnicza procedura służąca debugowaniu
 	static void show() {
 		System.out.println("MassMemory:");
-		for (byte i = 0; i != 16; ++i) {
+		for (byte i = 0; i != 64; ++i) {
+			System.out.print(i+":");
 			for (byte j = 0; j != 16; j++) {
 				System.out.print(pages[i][j]);
 			}

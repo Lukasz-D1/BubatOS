@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +27,17 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultCaret;
 
+import FileSystem.Drive;
+import FileSystem.FileException;
+import FileSystem.OutOfMemoryException;
+import IPC.Connection;
+import IPC.Handler;
+import Memory_PC.MassMemory;
+import Memory_PC.Memory;
+import Memory_PC.PageTab;
 import bubatos.Core;
+import ProcessManagment.*;
+import ProcessManagment.Process;
 
 
 public class Shell{
@@ -55,11 +66,27 @@ public class Shell{
 	protected List<String> commands = new ArrayList<String>();
 	protected int cmdindex;
 	
+	/* FILE EDIT */
+	boolean isfileediting = false;
+	List<String> filecontent = new ArrayList<String>();
+	String currfilename;
+	boolean isfileappending = false;
+	
+	/* MODULY INNYCH */
+	Drive mainDrive;
+	ProcessManagment pm;
+	// mem;
 	
 	/* KONSTRUKTOR */
-	public Shell()
+	public Shell(Drive mainDrive, ProcessManagment pm)
 	{
 		this.cmdindex = 0;
+		
+		this.mainDrive = mainDrive;
+		
+		this.pm = pm;
+		
+		//this.mem = mem;
 	}
 	
 	/* UTWORZENIE SHELL'A */
@@ -173,7 +200,7 @@ public class Shell{
 						//System.out.println("sas");
 					}
 				}
-				System.out.println("Pokzalem index: "+cmdindex);
+				//System.out.println("Pokzalem index: "+cmdindex);
 			}
 
 			@Override
@@ -198,7 +225,7 @@ public class Shell{
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			echo(e.getMessage(), false);
 		}
 		
 		area.setText("");
@@ -245,7 +272,14 @@ public class Shell{
 				this.lastcmd = "";
 				
 				//wypisz co trzeba
-				this.area.setText(output + this.makeStrDir()+ ">" + text + "\n");
+				if(this.isfileediting | this.isfileappending)
+				{
+					this.area.setText(output + ">" + text + "\n");
+				}
+				else
+				{
+					this.area.setText(output + this.makeStrDir()+ ">" + text + "\n");
+				}
 			}
 			else
 			{
@@ -315,7 +349,323 @@ public class Shell{
 				this.pcounter++;
 			}
 		}
-		else if(command.matches("^run[ ].*") | command.matches("^run$"))
+		else if(command.matches("^createfile[ ][a-zA-Z0-9\\.]*$") | command.matches("^writefile$"))
+		{
+			if(command.matches("^createfile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String[] args = command.split("[ ]");
+				try {
+					mainDrive.createFile(args[1]);
+					echo("Plik utworzono", false);
+				} catch (FileException | OutOfMemoryException e) {
+					echo(e.getMessage(), false);
+				}
+			}
+		}
+		else if(command.matches("^closefile[ ][a-zA-Z0-9\\.]*$") | command.matches("^closefile$"))
+		{
+			if(command.matches("^closefile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String[] args = command.split("[ ]");
+				try {
+					mainDrive.closeFile(args[1]);
+					echo("Plik zamknieto", false);
+				} catch (FileException | InterruptedException e) {
+					echo(e.getMessage(), false);
+				}
+			}
+		}
+		else if(command.matches("^openfile[ ][a-zA-Z0-9\\.]*$") | command.matches("^openfile$"))
+		{
+			if(command.matches("^openfile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String[] args = command.split("[ ]");
+				try {
+					mainDrive.openFile(args[1]);
+					echo("Plik otwarty", false);
+				} catch (FileException | InterruptedException e) {
+					echo(e.getMessage(), false);
+				}
+			}
+		}
+		/* WPISANIE DO PLIKU */
+		else if(command.matches("^writefile[ ][a-zA-Z0-9\\.]*$") | command.matches("^writefile$"))
+		{
+			if(command.matches("^writefile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String args;
+				
+				Pattern p2 = Pattern.compile("writefile[ ]");
+				Matcher m2 = p2.matcher(command);
+				
+				args = m2.replaceAll("");
+				
+				System.out.println(args);
+				
+				String[] filenm = args.split("\\.");
+					
+				this.currfilename = args;
+					
+				this.isfileediting = true;
+						
+				this.filecontent = new ArrayList<String>();
+
+			}
+		}
+		/* DODANIE DO PLIKU */
+		else if(command.matches("^appendfile[ ][a-zA-Z0-9\\.]*$") | command.matches("^appendfile$"))
+		{
+			if(command.matches("^appendfile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String args;
+				
+				Pattern p2 = Pattern.compile("appendfile[ ]");
+				Matcher m2 = p2.matcher(command);
+				
+				args = m2.replaceAll("");
+				
+				System.out.println(args);
+				
+				String[] filenm = args.split("\\.");		
+				
+				this.currfilename = args;
+					
+				this.isfileappending= true;
+					
+				this.filecontent = new ArrayList<String>();
+			}
+		}
+		/* WYSWIETLENIE PLIKOW */
+		else if(command.matches("^dir[ ].*") | command.matches("^dir$"))
+		{
+			if(command.matches("^dir[ ]*"))
+			{
+				this.echo(mainDrive.ListDirectory(), false);	
+			}
+			else
+			{
+				this.echo("Bledne argumenty", false);
+			}
+		}
+		/* ZMIANA NAZWY PLIKU */
+		else if(command.matches("^rename[ ].*") | command.matches("^rename$"))
+		{
+			if(command.matches("^rename[ ]*[a-zA-Z0-9\\.]*[ ]*[a-zA-Z0-9\\.]*$"))
+			{
+				String[] args = command.split("[ ]");
+				System.out.println(args[0]);
+				
+				try {
+					mainDrive.renameFile(args[1], args[2]);
+					echo("Zmiana powiodla sie", false);
+				} catch (FileException e) {
+					echo(e.getMessage(), false);
+				}
+				
+			}
+			else
+			{
+				this.echo("Bledne argumenty", false);
+			}
+		}
+		/* USUWANIE PLIKU */
+		else if(command.matches("^deletefile.*") | command.matches("^deletefile$"))
+		{
+			if(command.matches("^deletefile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String args;
+				
+				Pattern p2 = Pattern.compile("deletefile[ ]");
+				Matcher m2 = p2.matcher(command);
+				
+				args = m2.replaceAll("");
+				
+				System.out.println(args);
+				
+				try {
+					mainDrive.deleteFile(args);
+					echo("Plik zostal usuniety", false);
+				} catch (FileException e) {
+					echo(e.getMessage(), false);
+				}
+			}
+		}
+		/* POTOKOWE WPISYWANIE DO PLIKU */
+		else if(command.matches("^\\(.*\\)[ ]*>[ ]*[a-zA-Z0-9\\.]*$"))
+		{
+			String[] args;
+			
+			args = command.split(">");
+			
+			String filename;
+			String content;
+			
+			Pattern p2 = Pattern.compile("^[ ]*");
+			Matcher m2 = p2.matcher(args[1]);
+			
+			filename = m2.replaceAll("");
+			
+			Pattern p3 = Pattern.compile("^\\(|\\)$");
+			Matcher m3 = p3.matcher(args[0]);
+			
+			content = m3.replaceAll("");
+			
+			String[] lines = content.split("\\\\n");
+			
+			String dowpisania = "";
+			
+			for(String e : lines)
+			{
+				dowpisania+=e+"\n";
+			}
+			
+			System.out.println(content);
+			
+			try
+			{
+				mainDrive.writeFile(filename, dowpisania);
+				
+				echo("Zapisano dane w pliku", false);
+			} catch (FileException | OutOfMemoryException e) {
+				echo(e.getMessage(), false);
+			}
+		}
+		else if(command.matches("^readfile[ ][a-zA-Z0-9\\\\.]+[ ]+[0-9]+$") | command.matches("^readfile$"))
+		{
+			if(command.matches("^readfile[ ]*"))
+			{
+				this.echo("Nie podano nazwy pliku", false);
+			}
+			else
+			{
+				String args;
+				
+				Pattern p2 = Pattern.compile("readfile[ ]");
+				Matcher m2 = p2.matcher(command);
+				
+				args = m2.replaceAll("");
+				
+				System.out.println(args);
+				
+				String[] argss = args.split(" ");
+				
+				System.out.println(argss[0]);
+				
+				try
+				{
+					echo(mainDrive.readFile(argss[0], Integer.parseInt(argss[1])), false);
+					
+				} catch (FileException e) {
+					echo(e.getMessage(), false);
+				}
+			}
+		}
+		else if(command.matches("^printbitvector$"))
+		{
+			echo(mainDrive.printBitVector(), false);
+		}
+		else if(command.matches("^printdrive$"))
+		{
+			echo(mainDrive.printDrive(), false);
+		}
+		else if(command.matches("^printdiskblock[ ]+[0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+			echo(mainDrive.printDiskBlock(Integer.parseInt(args[1])), false);
+		}
+		else if(command.matches("^createfilelink[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+			try {
+				mainDrive.createLink(args[1], args[2]);
+				echo("Zlinkowano pliki", false);
+			} catch (FileException e) {
+				// TODO Auto-generated catch block
+				echo(e.getMessage(), false);
+			}
+		}
+		else if(command.matches("^printinodeinfo[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+
+			String s;
+			try {
+				s = mainDrive.printInodeInfo(args[1]);
+				echo(s, false);
+			} catch (FileException e) {
+				echo(e.getMessage(), false);
+			}
+
+		}
+		/* IPC */
+		//createconnection p1 p2 
+		//sendmessage p1 p2 message
+		//readmessage p1 p2
+		//endconnection p1 p2
+		else if(command.matches("^createconnection[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+			Connection c = new Connection(args[1], args[2]);
+			Handler.xxx.add(c);
+			echo("Stworzono polaczenie", false);
+		}
+		else if(command.matches("^sendmessage[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9/-]+$"))
+		{
+			String[] args = command.split("[ ]");
+			//System.out.println(Handler.xxx.get(0).toString());
+			Handler.getFromList(args[1], args[2]).sendMessage(args[1], args[2], args[3]);
+			echo("Wyslano wiadomosc", false);
+		}
+		else if(command.matches("^readmessage[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+			String odp = Handler.readfromlist(args[1]).readMessage(args[1]);
+			echo("Odczytano: "+odp, false);
+		}
+		else if(command.matches("^endconnection[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+			Handler.getFromList(args[1], args[2]).endConnection(args[1], args[2]);
+			echo("Zakonczono polaczenie", false);
+		}
+		else if(command.matches("^printinodeinfo[ ]+[a-zA-Z0-9]+$"))
+		{
+			String[] args = command.split("[ ]");
+
+			String s;
+			try {
+				s = mainDrive.printInodeInfo(args[1]);
+				echo(s, false);
+			} catch (FileException e) {
+				echo(e.getMessage(), false);
+			}
+
+		}
+		else if(command.matches("^run[ ][a-zA-Z0-9\\.]*") | command.matches("^run$"))
 		{
 			if(command.matches("^run[ ]*"))
 			{
@@ -332,15 +682,204 @@ public class Shell{
 				this.runScript(command);
 			}			
 		}
+		/* GO */
+		else if(command.matches("^go$"))
+		{
+			
+		}
+		else if(command.matches("^displaymem$"))
+		{
+			char[][] pam = Memory.getAll();
+			
+			String memtable = "";
+			
+			char[][] o = Memory.getAll();
+			for (byte i = 0; i != 4; ++i) {
+				System.out.print(i * 16 + "-" + (i * 16 + 15) + ":");
+				memtable+=i * 16 + "-" + (i * 16 + 15) + ":";
+				
+				for (byte j = 0; j != 16; ++j) {
+					System.out.print(o[i][j]);
+					memtable+=o[i][j];
+				}
+				memtable+="\n";
+				System.out.println();
+			}
+			
+			echo(memtable, false);
+		}/* PROCESS MANAGMENT*/
+		//createprocess nazwa rozmiar sciezka
+		//deleteprocess nazwa
+		//stopprocess nazwa
+		//displaybc nazwa
+		else if(command.matches("^deleteprocess[ ]+[0-9]+"))
+		{
+			String[] args = command.split("[ ]");
+			try {
+				pm.kill(pm.getProcessByID(Integer.parseInt(args[1])));
+				echo("Proces usuniety", false);
+			} catch (NumberFormatException | InterruptedException e) {
+				echo("Wystapil blad: "+e.getMessage(), false);
+			}
+		}
+		else if(command.matches("^stopprocess[ ]+[0-9]+"))
+		{
+			String[] args = command.split("[ ]");
+			pm.stop(pm.getProcessByID(Integer.parseInt(args[1])));
+			echo("Proces zatrzymany", false);
+		}
+		else if(command.matches("^deletenameprocess[ ]+[0-9]+"))
+		{
+			String[] args = command.split("[ ]");
+			try {
+				pm.kill(pm.getProcessByName(args[1]));
+				echo("Proces usuniety", false);
+			} catch (NumberFormatException | InterruptedException e) {
+				echo("Wystapil blad: "+e.getMessage(), false);
+			}
+		}
+		else if(command.matches("^stopnameprocess[ ]+[0-9]+"))
+		{
+			String[] args = command.split("[ ]");
+			pm.stop(pm.getProcessByName(args[1]));
+			echo("Proces zatrzymany", false);
+		}
+		else if(command.matches("^createprocess[ ]+[a-zA-Z0-9]+[ ]+[0-9]+[ ]*[a-zA-Z0-9/.]*$"))
+		{
+			String[] args = command.split("[ ]");
+			if(args.length == 4)
+			{
+				try {
+					Process p1 = pm.fork(pm.mainProcess);
+					p1.setProcessName(args[1]);
+					p1.setSizeOfFile(Integer.parseInt(args[2]));
+					p1.setFileName(args[3]);
+					echo("Utworzono proces", false);
+				} catch (IOException e) {
+					echo("Wystapil blad: "+e.getMessage(), false);
+				}
+			}
+			else
+			{
+				try {
+					Process p1 = pm.fork(pm.mainProcess);
+					p1.setProcessName(args[1]);
+					p1.setSizeOfFile(Integer.parseInt(args[2]));
+					echo("Utworzono proces", false);
+				} catch (IOException e) {
+					echo("Wystapil blad: "+e.getMessage(), false);
+				}
+			}
+		}
+		else if(command.matches("^displaymem[ ]+[0-9]+[ ]+[0-9]+"))
+		{
+			String[] args = command.split("[ ]");
+			try {
+				char[] mem = MassMemory.getChars(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+				
+				String zwr = "Zawartosc: \n";
+				
+				for(char m1 : mem)
+				{
+					zwr += m1;
+				}
+				
+				echo(zwr, false);
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				echo("Wystapil blad", false);
+			}
+		}
+		else if(command.matches("^displaynamebc[ ]+[a-zA-Z0-9]+$"))
+		{	
+			String[] args = command.split("[ ]");
+			
+			//pm.ps();
+			
+			echo(pm.getProcessByName(args[1]).printProcess(), false);
+			
+		}
+		else if(command.matches("^displaybc[ ]+[0-9]+$"))
+		{	
+			String[] args = command.split("[ ]");
+			
+			echo(pm.getProcessByID(Integer.parseInt(args[1])).printProcess(), false);
+			
+		}
 		else if(command.matches("^help$"))
 		{
 			this.echo("Dostepne komendy: ", false);
 			this.echo("    - cd: przejscie do danego katalogu", false);
 			this.echo("    - run skrypt: uruchomienie skryptu", false);
+			this.echo("    - writefile: tworzy i zapisuje nowy plik", false);
+			this.echo("    - (text)>nazwa: potokowy zapis pliku", false);
+			this.echo("    - readfile: wyswietlenie zawartosci pliku na konsole", false);
+			this.echo("    - deletefile: usuwanie pliku", false);
+			this.echo("    - renamefile: zmiana nazwy pliku", false);
+			this.echo("    - shutdown: wylaczenie systemu", false);
 		}
 		else if(command.matches("[ ]*"))
 		{
 			//do nothing
+		}
+		else if(command.matches("^shutdown$"))
+		{
+			System.exit(1);
+		}
+		else if(this.isfileappending)
+		{
+			if(command.matches(":q"))
+			{
+				this.isfileappending = false;
+				try
+				{
+					String fcont = "";
+					
+					for(String e : this.filecontent)
+					{
+						fcont+=e+"\n";
+					}
+					
+					mainDrive.appendFile(this.currfilename, fcont);
+					this.currfilename = "";
+					this.filecontent = new ArrayList<String>();
+				} catch (Exception e) {
+					echo(e.getMessage(), false);
+				}
+				
+			}
+			else
+			{
+				filecontent.add(command);
+			}
+		}
+		else if(this.isfileediting)
+		{
+			if(command.matches(":q"))
+			{
+				this.isfileediting = false;
+				try
+				{
+					String fcont = "";
+					
+					for(String e : this.filecontent)
+					{
+						fcont+=e+"\n";
+					}
+					
+					mainDrive.writeFile(this.currfilename, fcont);
+					this.currfilename = "";
+					this.filecontent = new ArrayList<String>();
+				} catch (FileException | OutOfMemoryException e) {
+					echo(e.getMessage(), false);
+				}
+				
+			}
+			else
+			{
+				filecontent.add(command);
+			}
 		}
 		else
 		{

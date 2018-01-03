@@ -423,7 +423,7 @@ public class Scheduler {
 	 * FUNKCJA GO
 	 * WYKONYWANIE KWANTU PROCESORA, GLOWNA FUNKCJA
 	 */
-	public void Go() {
+	public void Go() throws Exception {
 		
 		/*Zmienna pomocnicza zliczajaca ilosc wykonanych instrukcji w danym kwancie czasu */
 		byte InstructionsExecuted=0;

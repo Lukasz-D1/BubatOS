@@ -115,7 +115,11 @@ public class Scheduler {
 	 */
 	
 	@SuppressWarnings("unused")
-	public Scheduler() {
+	public Scheduler(Interpreter interpreter) {
+		
+		/* Przypisanie wartosci dla pola procesu */
+		this._InterpreterModule=interpreter;
+		
 		/* Ustawienie wartosci domyslnych priorytetow adekwatinie do ilosci priorytetow */
 		REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL=PriorityAmount-1;
 		VARIABLE_CLASS_THREAD_PRIORITY_IDLE=1;
@@ -221,6 +225,21 @@ public class Scheduler {
 	 * REMOVEFROMREADYLIST - KONIEC
 	 */
 	
+	public void InformSchedulerModifiedState(Process process) {
+		/* Wyzerowanie informacji o zuzytych kwantach*/
+		process.schedulingInformations.setUsedQuantumAmount((byte) 0);
+		
+		
+		/* Wykonanie funkcji pomocniczej usuwajacej proces z listy*/
+		this.RemoveFromReadyList(process);
+		
+		/* Ustawienie aktualnie wykonywanego procesu na NULL */
+		if (Scheduler.Running.equals(process)) {
+		Scheduler.Running=null;
+		}
+		
+	}
+	
 	/*
 	 * FINDREADYTHREAD
 	 * Metoda planisty na wyszukanie watku o najwyzszym priotytecie do wykonania przez procesor
@@ -304,6 +323,10 @@ public class Scheduler {
 	 * READYTHREAD (WERSJA DLA MODULU SEMAFORA) - KONIEC
 	 */
 	
+	/*
+	 * ISREADYTHREADEXPRIOPRIATING
+	 * FUNKCJA SPRAWDZAJACA CZY DANY PROCES WYWLASZCZA PROCESOR
+	 */
 	private void IsReadyThreadExpropriating(Process process) {
 		/* Jesli aktualnie jest wykonywany watek postojowy to i tak zostanie wywolana metoda ReadyThread zanim procesor wykona instrukcje, wiec
 		 * zaznaczamy flage tylko jesli */
@@ -316,6 +339,9 @@ public class Scheduler {
 			this.IsExpropriated=true;
 		}
 	}
+	/*
+	 * ISREADYTHREADEXPRIOPRIATING - KONIEC
+	 */
 	
 	/*
 	 * BALANCESETMANAGER
@@ -354,13 +380,11 @@ public class Scheduler {
 	 */
 	
 	
+	/*
+	 * FUNKCJA GO
+	 * WYKONYWANIE KWANTU PROCESORA, GLOWNA FUNKCJA
+	 */
 	public void Go() {
-		//tutaj sprawdz czy sie zmienia jesli nie no to nie rob nic, a jesli tak to jest wywlaszczenie albo skonczyly sie rozkazy
-		//bool czy wywlaszczony
-		//bo jesli nie to nie szukaj nowego, chyba ze sie skonczy to wtedy zmien
-		//jesli zacznie czekac to inny modul zmieni Running na null?
-		// mozesz tez sprawdzic czy proces ma nadal status running albo czy nie jest pusty
-		//moze sie tez proces skonczyc w trakcie wykonywania i co wtedy
 		
 		/*Zmienna pomocnicza zliczajaca ilosc wykonanych instrukcji w danym kwancie czasu */
 		byte InstructionsExecuted=0;
@@ -460,6 +484,8 @@ public class Scheduler {
 				InstructionsExecuted--;
 				/* Zmiana stanu na running */
 				Scheduler.Running.setStan(Process.processState.Running);
+				/* Ustawienie flagi "niepelnego kwantu" */
+				WasExpriopriatedDuringQuantum=true;
 				}
 				else {
 					/* Petla jest przerywana, aby nie marnowac czasu procesora */
@@ -520,6 +546,9 @@ public class Scheduler {
 		/* Zwiekszenie wartosci licznika wykonanych kwantow przez procesor */
 		QuantumAmountCounter++;
 	}
+	/*
+	 * FUNKCJA GO - KONIEC
+	 */
 	
 	
 	/*

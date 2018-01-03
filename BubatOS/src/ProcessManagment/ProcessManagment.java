@@ -62,6 +62,17 @@ public class ProcessManagment {
 				 processList.remove(pro);
 			 }
 		 }
+		 
+		 /*
+		  * 
+		  * Semafory tutaj
+		  * 
+		  */
+		 
+		 for(Inode ino : proToKill.fileList){
+			 	ino.v();
+			 }
+		 }
 	}
 	
 	// Zwróć proces po nazwie. UWAGA! Nie jest dodawany do listy wszystkich procesów - czy będzie to potrzebne?
@@ -84,7 +95,7 @@ public class ProcessManagment {
 			}
 		}
 		return process;
-	}
+	} 	
 	
 	// Wyświetlanie wszystkich procesów aktualnie istniejących w systemie.
 	public void ps(){

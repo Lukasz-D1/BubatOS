@@ -2,19 +2,24 @@ package Memory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PageTab {
 	byte[] tab; // tablica numerów stron, w których są dane procesu
+	int size;
+	String fileName;
 
-	//Poniższe 3 zmienne służą do wyciągania komend
+	// Poniższe 3 zmienne służą do wyciągania komend
 	int lastCommand = -1;
 	byte comP = 0;
 	byte comD = 0;
 
 	public PageTab(String fileName, int size) throws IOException {
+		this.fileName = fileName;
+		this.size = size;
 		FileReader Rr = new FileReader(fileName);
 		BufferedReader BRr = new BufferedReader(Rr);
 		String str = "";
@@ -24,8 +29,9 @@ public class PageTab {
 				line += "\n";
 			}
 			str += line;
-			System.out.print(line);
 		}
+		BRr.close();
+		Rr.close();
 		char data[] = str.toCharArray();
 		char[] data2 = new char[size];
 		for (short i = 0; i != data.length; ++i) {
@@ -41,7 +47,17 @@ public class PageTab {
 		MassMemory.clear(tab);
 	}
 
-	//funkcja zwracająca komendę o numerze n
+	public void save() throws IOException {
+		int i = 0;
+		FileWriter Wr = new FileWriter(fileName);
+		while (i != size) {
+			Wr.write(Memory.read(tab[i/16], (byte) (i%16)));
+			++i;
+		}
+		Wr.close();
+	}
+
+	// funkcja zwracająca komendę o numerze n
 	public List<String> getCommand(int n) {
 		List<String> ret = new ArrayList<String>();
 		if (++lastCommand != n) {
@@ -218,10 +234,7 @@ public class PageTab {
 			Memory.write(p, d, part);
 		} else { // zapisywanie na jednej stronie
 			byte p = tab[ad / 16];
-			System.out.println("ad=" + ad);
-			System.out.println("ad / 16 =" + ad / 16);
 			byte d = (byte) (ad % 16);
-			System.out.println("d=" + d);
 			byte n = (byte) (data.length);
 			char[] part = new char[n];
 			for (byte i = 0; i != n; ++i) {

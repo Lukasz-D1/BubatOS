@@ -3,7 +3,6 @@ package CPU_Scheduling;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
-import java.util.function.Predicate;
 
 import ProcessManagment.Process;
 import interpreter.Interpreter;
@@ -40,8 +39,21 @@ public class Scheduler {
 	 * ================================================================================================
 	 */
 	
+	
+	
+	/*
+	 * POLA ZAWNETRZNYCH MODUŁÓW
+	 */
+	
 	/* Pole zawierajace wskaznik do interpretera(jesli metody interpretera nie sa statyczne) */
 	Interpreter _InterpreterModule;
+	
+	/* Pole procesu INIT */
+	private Process _Init;
+	
+	/*
+	 * POLA ZAWNETRZNYCH MODUŁÓW - KONIEC
+	 */
 	
 	/*
 	 * STAŁE
@@ -72,10 +84,10 @@ public class Scheduler {
 	 */
 	private short QuantumAmountCounter=0;
 	
-	/*
-	 * KOMENTARZ
-	 */
+	/* Flaga wywlaszczenia procesu */
 	private boolean IsExpropriated=false;
+	
+	
 	
 	
 	/* Wartosci znaczacych priorytetow nadawane przez konstruktor gdy znana jest liczba priorytetow*/
@@ -102,6 +114,10 @@ public class Scheduler {
 	public static Process Running=null;
 	
 	/*
+	 * STAŁE - KONIEC
+	 */
+	
+	/*
 	 * ================================================================================================
 	 * POLA KLASY SCHEDULER - KONIEC
 	 * ================================================================================================
@@ -115,7 +131,7 @@ public class Scheduler {
 	 */
 	
 	@SuppressWarnings("unused")
-	public Scheduler(Interpreter interpreter) {
+	public Scheduler(Process init, Interpreter interpreter) {
 		
 		/* Przypisanie wartosci dla pola procesu */
 		this._InterpreterModule=interpreter;

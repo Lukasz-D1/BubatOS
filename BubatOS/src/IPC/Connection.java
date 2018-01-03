@@ -2,11 +2,15 @@ package IPC;
 
 //import semaphore.Semaphore;
 
+
+import java.util.List;
+
 public class Connection {
     private Server server = null;
     private Client client = null;
-    private String serverName = null;
-    private String clientName = null;
+    protected String serverName = null;
+    protected String clientName = null;
+    private int serverPort;
     //Semaphore semaphoreS = null;
     //Semaphore semaphoreC = null;
 
@@ -17,6 +21,8 @@ public class Connection {
         System.out.println("Otwieram polaczenie");
         server = new Server(50000); //getProcessByName(P1).getPID() +
         client = new Client(50000); //getProcessByName(P2).getPID() +
+        serverPort = 50000;
+        //ConnectionList.connectionList.add(this);
         //semaphoreS = new Semaphore("ServerSemaphore");
         //semaphoreC = new Semaphore("ClientSemaphore");
         //try {

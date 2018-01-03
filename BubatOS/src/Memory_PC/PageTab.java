@@ -33,6 +33,11 @@ public class PageTab {
 	}
 
 	public PageTab(String fileName, int size) throws IOException {
+		if (fileName == "") {
+			this.fileName="";
+			size = 0;
+			return;
+		}
 		this.fileName = fileName;
 		this.size = size;
 		FileReader Rr = new FileReader(fileName);
@@ -141,12 +146,12 @@ public class PageTab {
 		}
 	}
 
-	//Pobiera komendę spod podanego adresu logicznego
+	// Pobiera komendę spod podanego adresu logicznego
 	public Vector<String> getCommandFromAdress(int adr) {
 		Vector<String> ret = new Vector<String>();
 		lastCommand = 0;
 		for (comP = 0;; ++comP) {
-			if ((comP*16+comD)==adr) {
+			if ((comP * 16 + comD) == adr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -154,7 +159,7 @@ public class PageTab {
 				break;
 			}
 			for (comD = 0; comD != 16; ++comD) {
-				if ((comP*16+comD)==adr) {
+				if ((comP * 16 + comD) == adr) {
 					if (comD == 16) {
 						comD = 0;
 						++comP;
@@ -167,7 +172,7 @@ public class PageTab {
 					++lastCommand;
 				}
 			}
-			if ((comP*16+comD)==adr) {
+			if ((comP * 16 + comD) == adr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -220,7 +225,7 @@ public class PageTab {
 
 	// metoda odczytująca amount znaków zaczynając od adresu ad
 	public char[] read(int ad, int amount) throws Exception {
-		if(ad+amount>size) {
+		if (ad + amount > size) {
 			throw new Exception("Poza zakresem");
 		}
 		if (ad + amount >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
@@ -283,7 +288,7 @@ public class PageTab {
 
 	// metoda zapisująca znaki data zaczynając od adresu ad
 	public void write(int ad, char[] data) throws Exception {
-		if(ad+data.length>size) {
+		if (ad + data.length > size) {
 			throw new Exception("Poza zakresem");
 		}
 		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie

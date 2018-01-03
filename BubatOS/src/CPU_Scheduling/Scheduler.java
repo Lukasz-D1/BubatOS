@@ -348,8 +348,6 @@ public class Scheduler {
 				}
 				
 			}
-		/* Wyzerowanie licznika */
-		QuantumAmountCounter=0;
 		}
 	/*
 	 * BALANCESETMANAGER - KONIEC

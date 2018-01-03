@@ -12,14 +12,15 @@ public class PageTab {
 	String fileName;
 
 	// Poniższe 3 zmienne służą do wyciągania komend
+	int[][] jumpedIn = new int[4][2];
 	int lastCommand = -1;
 	byte comP = 0;
 	byte comD = 0;
 
 	public char[][] getProcessMemory() {
 		char[][] ret = new char[tab.length][16];
-		for (byte i = 0; i != tab.length; ++i) {
-			ret[i] = Memory.read(tab[i], (byte) 0, (byte) 16);
+		for (byte i = 0; i != size; ++i) {
+			ret[i/16][i%16] = Memory.read(tab[i/16], (byte) (i%16));
 		}
 		return ret;
 	}

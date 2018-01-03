@@ -1,4 +1,5 @@
 package ProcessManagment;
+
 import java.util.List;
 import java.util.LinkedList;
 
@@ -12,11 +13,9 @@ public class ProcessManagment {
 	@SuppressWarnings("static-access")
 	public ProcessManagment() {
 		// Alokacja pamięci - do dodania. Łata.
-		Memory memory = new Memory();
-		
 		// Tworzenie procesu init - głównego procesu uruchamianego w trakcie startu systemu.
 		// Konieczna deklaracja instancji obiektu ProcessManagment w main.
-		mainProcess = new Process("init", 0, memory);
+		mainProcess = new Process("init", 0, "");
 		
 		// Ustawienie stanu procesu init na Gotowy.
 		mainProcess.setStan(mainProcess.state.Ready);
@@ -31,11 +30,12 @@ public class ProcessManagment {
 	// Modyfikacja pól stworzonego procesu: nowy_proces.setProcessName("nazwa");
 	// Zwrócić uwagę na to, że ID procesu zawsze będzie dobrze nadawane - statyczne pole licznik procesów.
 	public Process fork(Process parent) {
-		// Łata pamięci.
-		Memory memory = new Memory();
-		
+			
 		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
-		Process process = new Process(parent.getProcessName(),parent.getPID(), memory);
+		Process process = new Process(parent.getProcessName(),parent.getSizeOfFile(), parent.getFileName());
+		
+		// Ustawienie ID rodzica.
+		process.setPPID(parent.getPID());
 		
 		// Dodanie procesu do listy procesów.
 		processList.add(process);
@@ -62,6 +62,17 @@ public class ProcessManagment {
 				 processList.remove(pro);
 			 }
 		 }
+		 
+		 /*
+		  * 
+		  * Semafory tutaj
+		  * 
+		  */
+		 
+		 for(Inode ino : proToKill.fileList){
+			 	ino.v();
+			 }
+		 }
 	}
 	
 	// Zwróć proces po nazwie. UWAGA! Nie jest dodawany do listy wszystkich procesów - czy będzie to potrzebne?
@@ -84,7 +95,7 @@ public class ProcessManagment {
 			}
 		}
 		return process;
-	}
+	} 	
 	
 	// Wyświetlanie wszystkich procesów aktualnie istniejących w systemie.
 	public void ps(){

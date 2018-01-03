@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
 
 public class PageTab {
 	byte[] tab; // tablica numerów stron, w których są dane procesu
@@ -17,6 +16,22 @@ public class PageTab {
 	byte comP = 0;
 	byte comD = 0;
 
+	public char[][] getProcessMemory(){
+		char[][] ret=new char[tab.length][16];
+		for(byte i=0; i!=tab.length; ++i) {
+			ret[i]=Memory.read(tab[i],(byte) 0,(byte) 16);
+		}
+		return ret;
+	}
+	
+	public String getFileName() {
+		return fileName;
+	}
+	
+	public int getSize() {
+		return size;
+	}
+	
 	public PageTab(String fileName, int size) throws IOException {
 		this.fileName = fileName;
 		this.size = size;
@@ -58,22 +73,38 @@ public class PageTab {
 	}
 
 	// funkcja zwracająca komendę o numerze n
-	public List<String> getCommand(int n) {
-		List<String> ret = new ArrayList<String>();
+	public Vector<String> getCommand(int n) {
+		Vector<String> ret = new Vector<String>();
 		if (++lastCommand != n) {
-			lastCommand = n;
-			int readCommands = 0;
+			lastCommand = 0;
 			for (comP = 0;; ++comP) {
-				if (readCommands == n) {
+				if (lastCommand == n) {
+					if(comD==16) {
+						comD=0;
+						++comP;
+					}
 					break;
 				}
 				for (comD = 0; comD != 16; ++comD) {
-					if (readCommands == n)
+					if (lastCommand == n) {
+						if(comD==16) {
+							comD=0;
+							++comP;
+						}
 						break;
+					}
+					//System.out.println("comP="+comP+" comD="+ comD);
 					char c = Memory.read(tab[comP], comD);
 					if (c == 10) {
-						++readCommands;
+						++lastCommand;
 					}
+				}
+				if (lastCommand == n) {
+					if(comD==16) {
+						comD=0;
+						++comP;
+					}
+					break;
 				}
 			}
 		}

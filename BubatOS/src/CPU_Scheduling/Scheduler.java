@@ -49,7 +49,7 @@ public class Scheduler {
 	Interpreter _InterpreterModule;
 	
 	/* Pole procesu INIT */
-	private Process _Init;
+	private Process InitProcess;
 	
 	/*
 	 * POLA ZAWNETRZNYCH MODUŁÓW - KONIEC
@@ -97,6 +97,7 @@ public class Scheduler {
 	public static byte REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL;
 	public static byte REALTIME_CLASS_THREAD_PRIORITY_NORMAL;
 	public static byte REALTIME_CLASS_THREAD_PRIORITY_IDLE;
+	public static byte INITPROCESS_THREAD_PRIORITY=0;
 	
 	
 	/*
@@ -133,8 +134,17 @@ public class Scheduler {
 	@SuppressWarnings("unused")
 	public Scheduler(Process init, Interpreter interpreter) {
 		
-		/* Przypisanie wartosci dla pola procesu */
+		
+		/* Przypisanie modulu interpretera do pola */
 		this._InterpreterModule=interpreter;
+		
+		/* Przypisanie do pola procesu INIT */
+		this.InitProcess=init;
+		
+		/* Ustawienie procesu aktualnie wykonywanego na INIT*/
+		Scheduler.Running=InitProcess;
+		
+		
 		
 		/* Ustawienie wartosci domyslnych priorytetow adekwatinie do ilosci priorytetow */
 		REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL=PriorityAmount-1;
@@ -163,9 +173,13 @@ public class Scheduler {
 		/* Utworzenie tablicy kolejek procesow gotowych */
 		KiDispatcherReadyListHead=new Vector<LinkedList<Process>>(PriorityAmount);
 		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
-			LinkedList<Process> nullList=KiDispatcherReadyListHead.get(iterator);
-			nullList=new LinkedList<Process>();
+			LinkedList<Process> ListPointer=KiDispatcherReadyListHead.get(iterator);
+			ListPointer=new LinkedList<Process>();
 		}
+		/* INIT */
+		LinkedList<Process> ListPointer=KiDispatcherReadyListHead.get(0);
+		ListPointer=new LinkedList<Process>();
+		ListPointer.add(this.InitProcess);
 		
 	}
 	/*
@@ -241,6 +255,9 @@ public class Scheduler {
 	 * REMOVEFROMREADYLIST - KONIEC
 	 */
 	
+	/*
+	 * INFORMSCHEDULERMODIFIEDSTATE
+	 */
 	public void InformSchedulerModifiedState(Process process) {
 		/* Wyzerowanie informacji o zuzytych kwantach*/
 		process.schedulingInformations.setUsedQuantumAmount((byte) 0);
@@ -251,10 +268,12 @@ public class Scheduler {
 		
 		/* Ustawienie aktualnie wykonywanego procesu na NULL */
 		if (Scheduler.Running.equals(process)) {
-		Scheduler.Running=null;
+		Scheduler.Running=InitProcess;
 		}
-		
 	}
+	/*
+	 * INFORMSCHEDULERMODIFIEDSTATE - KONIEC
+	 */
 	
 	/*
 	 * FINDREADYTHREAD
@@ -272,7 +291,7 @@ public class Scheduler {
 				 * - proces ma inny stan niz gotowy
 				 * - proces z jakiegos powodu zostal usuniety(null) ale nadal jest dostepny w kolejce
 				 * */
-				if (foundThread!=null && foundThread.getState()==Process.processState.Ready) {
+				if (foundThread.getState()==Process.processState.Ready) {
 					/* Jesli nie ma bledu przekaz zwroc proces planiscie  */
 					return foundThread;
 				}
@@ -286,11 +305,15 @@ public class Scheduler {
 					
 					/* Zwiekszenie wartosci iteratora aby poraz kolejny przeszukac ta sama kolejke bez koniecznosci przeszukiwania od nowa poprzednich */
 					iterator+=1;
+					
 				}
 			}
 		}
-		return null; //null->IDLE (watek postojowy)
+		return this.InitProcess;
 	}
+	/*
+	 * FINDREADYTHREAD - KONIEC
+	 */
 	
 	/*
 	 * READYTHREAD
@@ -426,7 +449,7 @@ public class Scheduler {
 			
 			/* Zabezpieczenie przed przypadkiem kiedy proces zostal ustawiony na stan Waiting lub Terminated 
 			 * (Oddzielna instrukcja warunkowa aby zapobiec bledom sprawdzania stanu procesu obiektu null*/
-			if (Scheduler.Running!=null &&  Scheduler.Running.getState()!=Process.processState.Running) {
+			if (Scheduler.Running!=this.InitProcess && Scheduler.Running!=null &&  Scheduler.Running.getState()!=Process.processState.Running) {
 				/* Usuniecie z listy procesow gotowych */
 				this.RemoveFromReadyList(Scheduler.Running);
 				/* Znalezienie procesu o najwyzszym priorytecie do wykonania*/
@@ -436,7 +459,7 @@ public class Scheduler {
 				
 			}
 			
-			if (Scheduler.Running!=null) {
+			if (Scheduler.Running!=null && Scheduler.Running!=this.InitProcess) {
 				/* Zapisanie informacji o stanie licznika procesora w momencie ostatniego przydzialu procesora procesowi(postarzanie/odmladzanie) */
 				Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
 				
@@ -445,7 +468,7 @@ public class Scheduler {
 			if (this.IsExpropriated==true) {
 				WasExpriopriatedDuringQuantum=true;
 				/* Zabezpieczenie przed potencjalnym bledem o niskim prawdopodobienstwie */
-				if(Scheduler.Running!=null) {
+				if(Scheduler.Running!=null && Scheduler.Running!=this.InitProcess) {
 					/* Aktualizacja danych o procesie wywlaszczonym */
 					Scheduler.Running.setStan(Process.processState.Ready);
 					//Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
@@ -495,7 +518,7 @@ public class Scheduler {
 			else {
 				/* Proba znalezienia procesu(na wypadek jakby proces dotychczas wykonywany sie zakonczyl i watek ustawiony bylby na null) */
 				Scheduler.Running=this.FindReadyThread();
-				if (Scheduler.Running!=null) {
+				if (Scheduler.Running!=null && Scheduler.Running!=this.InitProcess) {
 				/* Obnizenie licznika wykonywanych instrukcji, ktory zostanie podbity na koniec petli */
 				InstructionsExecuted--;
 				/* Zmiana stanu na running */
@@ -514,7 +537,7 @@ public class Scheduler {
 		}
 		
 		/*Sprawdzenie czy nie jest ustawiony watek postojowy, zabezpieczenie przed bledem */
-		if (Scheduler.Running!=null) {
+		if (Scheduler.Running!=null && Scheduler.Running!=this.InitProcess) {
 		
 		/* Po uplynieciu kwantu czasu ustawiamy stan procesu ktory wykonal ostatni rozkaz na stan Ready pod warunkiem ze wczesniej jego stan nie zostal zmieniony(np. na Waiting) */
 		if (Scheduler.Running.getState()==Process.processState.Running){
@@ -558,7 +581,7 @@ public class Scheduler {
 		}
 		}
 		/* Po wykonaniu kwantu czasu uruchomienie watku postojowego */
-		Scheduler.Running=null;
+		Scheduler.Running=this.InitProcess;
 		/* Zwiekszenie wartosci licznika wykonanych kwantow przez procesor */
 		QuantumAmountCounter++;
 	}

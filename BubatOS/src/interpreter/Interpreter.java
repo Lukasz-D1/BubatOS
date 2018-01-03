@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.Vector;
 import jdk.nashorn.internal.runtime.regexp.RegExpMatcher;
 
+
+
 public class Interpreter 
 {
     public int commandCounter;
     public int registerA;
     public int registerB;
+    private int accu;
     
     Interpreter()
     {
@@ -105,7 +108,20 @@ public class Interpreter
             }else if(command.elementAt(1).equals("B")&&command.elementAt(2).equals("A"))
             {
                 registerB=registerA;
+            }if(command.elementAt(1).equals("M")&&command.elementAt(2).equals("A"))
+            {
+                accu=registerA;
+            }else if(command.elementAt(1).equals("A")&&command.elementAt(2).equals("M"))
+            {
+                registerA=accu;
+            }else if(command.elementAt(1).equals("M")&&command.elementAt(2).equals("B"))
+            {
+                accu=registerB;
+            }else if(command.elementAt(1).equals("B")&&command.elementAt(2).equals("M"))
+            {
+                registerB=accu;
             }
+            
             commandCounter=commandCounter+6;
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("AX")) //Dodawanie liczby do rejestru
@@ -195,7 +211,8 @@ public class Interpreter
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu
         {
-            Process nowy = init.fork(command.elementAt(1));
+            Process nowy = pm.fork(init);
+            nowy.setParentID(command.elementAt(2));
             commandCounter=commandCounter+3+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu
@@ -209,19 +226,29 @@ public class Interpreter
             a.ReadyThread(nowy);
             commandCounter=commandCounter+3+command.elementAt(1).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("RC")) //Czytanie komunikatu
+        }else if(command.elementAt(0).equals("RM")) //Czytanie komunikatu
         {
-            readMessage(command.elementAt(1));
+            x.readMessage(command.elementAt(1));
             commandCounter=commandCounter+3+command.elementAt(1).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("SC")) //Wysłanie komunikatu
+        }else if(command.elementAt(0).equals("SM")) //Wysłanie komunikatu
         {
-            sendMessage(command.elementAt(1),command.elementAt(2),command.elementAt(3));
+            x.sendMessage(command.elementAt(1),command.elementAt(2),command.elementAt(3));
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+    /*_______________________________________________________________*/        
+        }else if(command.elementAt(0).equals("CC")) //Wysłanie komunikatu
+        {
+            Connection x= new Connection(command.elementAt(1),command.elementAt(2));
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
+    /*_______________________________________________________________*/        
+        }else if(command.elementAt(0).equals("EC")) //Wysłanie komunikatu
+        {
+            x.endConnection(command.elementAt(1),command.elementAt(2));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartości rejestru
         {
-            if(registerA==0)
+            if(accu==0)
             {
                 skok(command.elementAt(1));
             }

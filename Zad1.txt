@@ -1,8 +1,8 @@
-MO A 10		A=10 B=0 accu=0
-MV B A		A=10 B=10 accu=0
-SX B 1		A=10 B=9 accu=0
-MV M B		A=10 B=9 accu=9
-JZ 42		A=10 B=9 accu=9
-MU A B		A=90 B=9 accu=9
-JP 14		
+MO A 10
+MV B A
+SX B 1
+MV M B
+JZ 42
+MU A B
+JP 14
 HT

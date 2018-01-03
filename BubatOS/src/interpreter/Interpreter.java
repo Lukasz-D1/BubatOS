@@ -32,14 +32,14 @@ public class Interpreter
         this.pm = pm;
     }
     
-    /*Pobranie rejestrów*/
+    /*Pobranie rejestrÃ³w*/
     public void getRegister(int registerA, int registerB, int commandCounter)
     {
         this.registerA=registerA;
         this.registerB=registerB;
         this.commandCounter=commandCounter;
     }
-    /*Odsy³anie zmienionych wartoœci rejestrów i licznika rozkazów*/
+    /*OdsyÂ³anie zmienionych wartoÅ“ci rejestrÃ³w i licznika rozkazÃ³w*/
     public int setRegisterA()
     {
         return registerA;
@@ -58,11 +58,11 @@ public class Interpreter
         return commandCounter;
     }
                
-    /* Za³o¿enie jest takie, ¿e dostajê rozkaz jako tablicê stringów (1,2,3 albo 4 elementow¹)
-    i pole zerowe to nazwa rozkazu, a pozosta³e pola to argumenty.*/
+    /* ZaÂ³oÂ¿enie jest takie, Â¿e dostajÃª rozkaz jako tablicÃª stringÃ³w (1,2,3 albo 4 elementowÂ¹)
+    i pole zerowe to nazwa rozkazu, a pozostaÂ³e pola to argumenty.*/
     public void getCommand(Vector<String> command) throws Exception
     {     
-       if(command.elementAt(0).equals("AD")) // Dodawanie rejestrów
+       if(command.elementAt(0).equals("AD")) // Dodawanie rejestrÃ³w
        {
            if(command.elementAt(1).equals("A")&&command.elementAt(2).equals("A"))
            {
@@ -79,7 +79,7 @@ public class Interpreter
            }
            commandCounter=commandCounter+6;
     /*_______________________________________________________________*/         
-       }else if(command.elementAt(0).equals("SB")) //Odejmowanie rejestrów
+       }else if(command.elementAt(0).equals("SB")) //Odejmowanie rejestrÃ³w
         {
             if(command.elementAt(1).equals("A")&&command.elementAt(2).equals("A"))
             {
@@ -96,7 +96,7 @@ public class Interpreter
             }
             commandCounter=commandCounter+6;
     /*_______________________________________________________________*/
-        }else if(command.elementAt(0).equals("MU")) // Mno¿enie rejestrów
+        }else if(command.elementAt(0).equals("MU")) // MnoÂ¿enie rejestrÃ³w
         {
             if(command.elementAt(1).equals("A")&&command.elementAt(2).equals("A"))
             {
@@ -113,7 +113,7 @@ public class Interpreter
             }
             commandCounter=commandCounter+6;
     /*_______________________________________________________________*/
-        }else if(command.elementAt(0).equals("MV")) //Przypisywanie wartoœci rejestrom
+        }else if(command.elementAt(0).equals("MV")) //Przypisywanie wartoÅ“ci rejestrom
         {
             if(command.elementAt(1).equals("A")&&command.elementAt(2).equals("A"))
             {
@@ -165,7 +165,7 @@ public class Interpreter
             }
             commandCounter=commandCounter+5+command.elementAt(2).length();
     /*_______________________________________________________________*/
-        }else if(command.elementAt(0).equals("MX")) //Mno¿enie rejestru razy liczba
+        }else if(command.elementAt(0).equals("MX")) //MnoÂ¿enie rejestru razy liczba
         {
             if(command.elementAt(1).equals("A"))
             {
@@ -189,13 +189,13 @@ public class Interpreter
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("JP")) //Skok do rozkazu o podanym adresie
         {   
-            //tu musi byc metoda wracaj¹ca do odpowiedniego rozkazu.
+            //tu musi byc metoda wracajÂ¹ca do odpowiedniego rozkazu.
            skok(BasisLibrary.stringToInt(command.elementAt(1)));
             commandCounter=BasisLibrary.stringToInt(command.elementAt(1));
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("HT")) //Koniec programu
         {
-            // jakoœ to wszystko wywalac, tylko nie mam pomyslu jak.
+            // jakoÅ“ to wszystko wywalac, tylko nie mam pomyslu jak.
             
             commandCounter=commandCounter+2;
     /*_______________________________________________________________*/    
@@ -243,12 +243,11 @@ public class Interpreter
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu
         {
-        	/*Process nowy = pm.fork(pm.mainProcess);
-        	nowy.setProcessName(args[1]);
-			nowy.setSizeOfFile(Integer.parseInt(args[2]));
-			nowy.setFileName(args[3]); */
-			//command counter do poprawienia
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+        	Process nowy = pm.fork(pm.mainProcess);
+        	nowy.setProcessName(command.elementAt(1));
+			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(2)));
+			nowy.setFileName(command.elementAt(3));
+            commandCounter=commandCounter+3+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu
         {
@@ -269,24 +268,24 @@ public class Interpreter
             Handler.readfromlist(command.elementAt(1)).readMessage(command.elementAt(1));
             commandCounter=commandCounter+3+command.elementAt(1).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("SM")) //Wys³anie komunikatu
+        }else if(command.elementAt(0).equals("SM")) //WysÂ³anie komunikatu
         {
             //x.sendMessage(command.elementAt(1),command.elementAt(2),command.elementAt(3));
             Handler.getFromList(command.elementAt(1), command.elementAt(2)).sendMessage(command.elementAt(1), command.elementAt(2), command.elementAt(3));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("CC")) //Tworzenie po³¹czenia
+        }else if(command.elementAt(0).equals("CC")) //Tworzenie poÂ³Â¹czenia
         {
             Connection x= new Connection(command.elementAt(1),command.elementAt(2));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("EC")) //Koñczenie po³¹czenia
+        }else if(command.elementAt(0).equals("EC")) //KoÃ±czenie poÂ³Â¹czenia
         {
             //x.endConnection(command.elementAt(1),command.elementAt(2));
             Handler.getFromList(command.elementAt(1), command.elementAt(2)).endConnection(command.elementAt(1), command.elementAt(2));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartoœci rejestru
+        }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartoÅ“ci rejestru
         {
             if(accu==0)
             {

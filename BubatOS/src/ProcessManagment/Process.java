@@ -26,13 +26,13 @@ public class Process {
 	private int PPID = 0; 													
 	// Lista dzieci procesu.
 	List<Process> processChildrenList = new LinkedList<Process>(); 		
-	// DostÄ™pne stany - Nowy, DziaÅ‚ajÄ…cy, OczekujÄ…cy, Gotowy, ZakoÅ„czony.
+	// Dostêpne stany - Nowy, Dzia³aj¹cy, Oczekuj¹cy, Gotowy, Zakoñczony.
 	public enum processState {
 		New, Running, Waiting, Ready, Terminated						
 	}; 
 	// Pole odpowiedzialne za przechowywanie aktualnego stanu procesu.
 	public processState state; 											
-	// Licznik procesÃ³w, ktÃ³ry pomaga w nadawaniu ID.
+	// Licznik procesów, który pomaga w nadawaniu ID.
 	private static int processCounter = 0; 								
 
 	// Rejestry.
@@ -40,32 +40,32 @@ public class Process {
 	
 	// Tablica stronic.
 	public PageTab processTab;											
-	// Nazwa pliku z danymi programu - niedopowiedziane przez moduÅ‚y.
+	// Nazwa pliku z danymi programu - niedopowiedziane przez modu³y.
 	private String fileName;			
 	
 	// Rozmiar pliku.
 	private int sizeOfFile;
 
-	// Lista iWÄ™zÅ‚Ã³w na ktÃ³rych operuje proces.
+	// Lista iWêz³ów na których operuje proces.
 	
 	/*
 	 * 
-	 * Semafory tutaj kurwa maÄ‡.
+	 * Semafory tutaj kurwa maæ.
 	 * 
 	 */
 	
 	List<Inode> fileList = new LinkedList<Inode>(); 
 	
-	// Konstruktor domyÅ›lny.
+	// Konstruktor domyœlny.
 	public Process() {
 
 	}
 
-	// Konstruktor wÅ‚aÅ›ciwy. Przyjmowane parametry: nazwa procesu, ID rodzica (potrzebne do struktury hierarchicznej).
-	// Dodatkowo parametr albo pamiÄ™Ä‡, albo nazwa pliku.
+	// Konstruktor w³aœciwy. Przyjmowane parametry: nazwa procesu, ID rodzica (potrzebne do struktury hierarchicznej).
+	// Dodatkowo parametr albo pamiêæ, albo nazwa pliku.
 	public Process(String name, int sizeOfFile, String fileName) throws IOException {
 		
-		// Nadawanie ID z pomocÄ… licznika procesÃ³w.
+		// Nadawanie ID z pomoc¹ licznika procesów.
 		this.PID = processCounter;
 		processCounter++;
 		
@@ -89,8 +89,8 @@ public class Process {
 		System.out.println("Utworzono proces o nazwie: " + processName + ", i ID numer: " + PID);
 	}
 	
-	public Process(Process parent) {
-		// Nadawanie ID z pomocÄ… licznika procesÃ³w.
+	public Process(Process parent) throws IOException {
+		// Nadawanie ID z pomoc¹ licznika procesów.
 		this.PID = processCounter;
 		processCounter++;
 		
@@ -115,19 +115,19 @@ public class Process {
 
 	}
 
-	// ZwrÃ³Ä‡ nazwÄ™ procesu.
+	// Zwróæ nazwê procesu.
 	public String getProcessName() {
 		return processName;
 	}
 
-	// Ustaw nazwÄ™ procesu.
+	// Ustaw nazwê procesu.
 	public void setProcessName(String processName) {
 		System.out.println("Poprzednia nazwa procesu: " + this.processName);
 		this.processName = processName;
 		System.out.println("Aktualna nazwa procesu: " + this.processName);
 	}
 	
-	// ZwrÃ³Ä‡ ID procesu.
+	// Zwróæ ID procesu.
 	public int getPID() {
 		return PID;
 	}
@@ -139,7 +139,7 @@ public class Process {
 		System.out.println("Aktualne ID procesu: " + this.PID);
 	}
 	
-	// ZwrÃ³c ID rodzica.
+	// Zwróc ID rodzica.
 	public int getPPID() {
 		return PPID;
 	}
@@ -151,23 +151,23 @@ public class Process {
 		System.out.println("Aktualne ID rodzica: " + this.PPID);
 	}
 
-	// ZwrÃ³Ä‡ licznik procesÃ³w.
+	// Zwróæ licznik procesów.
 	public static int getProcessCounter() {
 		return processCounter;
 	}
 
-	// ZwrÃ³Ä‡ rejestr odpowiedzialny za licznik rozkazÃ³w.
+	// Zwróæ rejestr odpowiedzialny za licznik rozkazów.
 	public int getProgramCounter() {
 		return programCounter;
 	}
 
-	// ZwrÃ³Ä‡ rejestr A.
+	// Zwróæ rejestr A.
 	public int getR1() {
 		return r1;
 	}
 
 	
-	// ZwrÃ³Ä‡ rejestr B.
+	// Zwróæ rejestr B.
 	public int getR2() {
 		return r2;
 	}
@@ -186,7 +186,7 @@ public class Process {
 		System.out.println("Aktualny stan rejestru B: " + this.r2);
 	}
 
-	// ZwrÃ³Ä‡ aktualny stan procesu.
+	// Zwróæ aktualny stan procesu.
 	public processState getState() {
 		return state;
 	}
@@ -215,7 +215,7 @@ public class Process {
 		return "Proces o nazwie: " + this.getProcessName() + "\n ID: " + this.getPID() + " \n ID rodzica: " + this.getPPID() + " \n o stanie: " + this.getState() + "o rejestrach R1,R2, program counter: " + this.getR1() + ", " + this.getR2() + ", " + this.getProgramCounter() + " \n rozmiarze w pamieci: " + this.getSizeOfFile() + " \n opcjonalnej sciezce do pliku: " + this.getFileName()+"\n"+pam;
 	}
 	
-	// Wypisz listÄ™ procesÃ³w potomnych.
+	// Wypisz listê procesów potomnych.
 	public void showProcessChildrenList(){
 		for(Process pro : this.processChildrenList){
 			pro.printProcess();
@@ -326,7 +326,7 @@ public class Process {
 		 */ 
 		
 		/*
-		 * KONSTRUKTOR DZIEDZICZÄ„CY
+		 * KONSTRUKTOR DZIEDZICZ¥CY
 		 */ 
 		public SchedulingInfo(Process parent) {
 			
@@ -343,7 +343,7 @@ public class Process {
 			this.UsedQuantumAmount = 0;
 		}
 		/*
-		 * KONSTRUKTOR DZIEDZICZÄ„CY - KONIEC
+		 * KONSTRUKTOR DZIEDZICZ¥CY - KONIEC
 		 */ 
 
 		/*

@@ -83,8 +83,10 @@ public class Server implements Runnable {
         }
     }
 
-    public void read() {
-        System.out.println(messageList.poll());
+    public String read() {
+    	//marcin z void na string
+        //System.out.println(messageList.poll());
+        return messageList.poll();
     }
 
 }

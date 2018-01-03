@@ -1,4 +1,4 @@
-package Memory;
+package Memory_PC;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,15 +7,12 @@ import java.io.IOException;
 import java.util.Vector;
 
 public class PageTab {
-	byte[] tab; // tablica numerÃ³w stron, w ktÃ³rych sÄ… dane procesu
+	byte[] tab; // tablica numerów stron, w których s¹ dane procesu
 	int size;
 	String fileName;
 
- 
-	
-	int[][] jumpedIn = new int[4][2]; //zbiÃ³r danych o dotychczas wykonanych procesach
-	byte ji = 0; //zmienna pomocnicza do zarzÄ…dzania powyÅ¼szÄ… tablicÄ…
-	// PoniÅ¼sze 3 zmienne sÅ‚uÅ¼Ä… do wyciÄ…gania komend
+	// Poni¿sze 3 zmienne s³u¿¹ do wyci¹gania komend
+	int[][] jumpedIn = new int[4][2];
 	int lastCommand = -1;
 	byte comP = 0;
 	byte comD = 0;
@@ -83,7 +80,7 @@ public class PageTab {
 		Wr.close();
 	}
 
-	// funkcja zwracajÄ…ca komendÄ™ o numerze n
+	// funkcja zwracaj¹ca komendê o numerze n
 	public Vector<String> getCommand(int n) {
 		Vector<String> ret = new Vector<String>();
 		if (++lastCommand != n) {
@@ -152,49 +149,12 @@ public class PageTab {
 		}
 	}
 
-	// Pobiera komendÄ™ spod podanego adresu logicznego
-	public Vector<String> getCommandFromAddress(int addr) {
+	// Pobiera komendê spod podanego adresu logicznego
+	public Vector<String> getCommandFromAdress(int adr) {
 		Vector<String> ret = new Vector<String>();
-		for(int i=0; i!=8; ++i) {
-			if(addr==jumpedIn[i][1]) {
-				lastCommand=jumpedIn[i][0];
-				char c;
-				String str = "";
-				while (true) {
-					for (; comD != 16; comD++) {
-						if (str == "HX" || str == "hx") {
-							ret.add(str);
-							comD++;
-							if (comD > 15) {
-								++comP;
-								comD -= 16;
-							}
-							return ret;
-						}
-						c = Memory.read(tab[comP], comD);
-						if (c == 10) {
-							ret.add(str);
-							comD++;
-							if (comD > 15) {
-								++comP;
-								comD -= 16;
-							}
-							return ret;
-						} else if (c == 32) {
-							ret.add(str);
-							str = "";
-						} else {
-							str += c;
-						}
-					}
-					comD = 0;
-					++comP;
-				}
-			}
-		}
 		lastCommand = 0;
 		for (comP = 0;; ++comP) {
-			if ((comP * 16 + comD) == addr) {
+			if ((comP * 16 + comD) == adr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -202,19 +162,20 @@ public class PageTab {
 				break;
 			}
 			for (comD = 0; comD != 16; ++comD) {
-				if ((comP * 16 + comD) == addr) {
+				if ((comP * 16 + comD) == adr) {
 					if (comD == 16) {
 						comD = 0;
 						++comP;
 					}
 					break;
 				}
+				// System.out.println("comP="+comP+" comD="+ comD);
 				char c = Memory.read(tab[comP], comD);
 				if (c == 10) {
 					++lastCommand;
 				}
 			}
-			if ((comP * 16 + comD) == addr) {
+			if ((comP * 16 + comD) == adr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -242,9 +203,6 @@ public class PageTab {
 						++comP;
 						comD -= 16;
 					}
-					ji%=8;
-					jumpedIn[ji][1]=addr;
-					++ji;
 					return ret;
 				} else if (c == 32) {
 					ret.add(str);
@@ -258,22 +216,22 @@ public class PageTab {
 		}
 	}
 
-	// metoda read w wersji zwracajÄ…cej String
+	// metoda read w wersji zwracaj¹cej String
 	public String readString(int ad, int amount) throws Exception {
 		return new StringBuilder().append(read(ad, amount)).toString();
 	}
 
-	// metoda write w akceptujÄ…ca dane w formie String
+	// metoda write w akceptuj¹ca dane w formie String
 	public void write(int ad, String data) throws Exception {
 		write(ad, data.toCharArray());
 	}
 
-	// metoda odczytujÄ…ca amount znakÃ³w zaczynajÄ…c od adresu ad
+	// metoda odczytuj¹ca amount znaków zaczynaj¹c od adresu ad
 	public char[] read(int ad, int amount) throws Exception {
 		if (ad + amount > size) {
 			throw new Exception("Poza zakresem");
 		}
-		if (ad + amount >= tab.length * 16) { // Gdy odwoÅ‚ano siÄ™ do znaku o zbyt duÅ¼ym adresie
+		if (ad + amount >= tab.length * 16) { // Gdy odwo³ano siê do znaku o zbyt du¿ym adresie
 			return null;
 		}
 		char[] ret = new char[amount];
@@ -302,7 +260,7 @@ public class PageTab {
 			for (byte i = 0; i < n; ++i) {
 				ret[re + i] = part[i];
 			}
-		} else if ((ad % 16) + amount > 16) { // odczytywanie z dwÃ³ch stron
+		} else if ((ad % 16) + amount > 16) { // odczytywanie z dwóch stron
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
@@ -331,12 +289,12 @@ public class PageTab {
 		return ret;
 	}
 
-	// metoda zapisujÄ…ca znaki data zaczynajÄ…c od adresu ad
+	// metoda zapisuj¹ca znaki data zaczynaj¹c od adresu ad
 	public void write(int ad, char[] data) throws Exception {
 		if (ad + data.length > size) {
 			throw new Exception("Poza zakresem");
 		}
-		if (ad + data.length >= tab.length * 16) { // Gdy odwoÅ‚ano siÄ™ do znaku o zbyt duÅ¼ym adresie
+		if (ad + data.length >= tab.length * 16) { // Gdy odwo³ano siê do znaku o zbyt du¿ym adresie
 			throw new Exception("Poza zakresem");
 		}
 		if ((ad % 16) + data.length > 32) { // zapisywanie na trzech stronach
@@ -367,7 +325,7 @@ public class PageTab {
 				part[i] = data[wr + i];
 			}
 			Memory.write(p, d, part);
-		} else if ((ad % 16) + data.length > 16) { // zapisywanie na dwÃ³ch stronach
+		} else if ((ad % 16) + data.length > 16) { // zapisywanie na dwóch stronach
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);

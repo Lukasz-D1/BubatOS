@@ -1,5 +1,8 @@
-package inodes;
+package FileSystem;
 import java.util.Date;
+
+import semaphore.Semaphore;
+
 public class Inode {
 	String month;
 	int day;
@@ -7,7 +10,7 @@ public class Inode {
 	int minute;
 	
 	boolean stan; //czy otwarty true-uzywany przez proces
-	Semaphore s;
+	public Semaphore s;
 	int sizeF;
 	int LinkCounter; // licznik trwałych dowiązań
 	//zerowy indeks wskazuje bezpośrednio na blok dyskowy z danymi. Następny wskazuje na blok indeksowe.

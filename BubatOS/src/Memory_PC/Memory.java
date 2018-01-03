@@ -1,8 +1,8 @@
-package Memory;
+package Memory_PC;
 
 public final class Memory {
 
-	// funkcja podajÄ…ca aktualny stan pamiÄ™ci, jedyna publiczna metoda w tej klasie
+	// funkcja podaj¹ca aktualny stan pamiêci, jedyna publiczna metoda w tej klasie
 	static public char[][] getAll() {
 		char[][] ret = new char[4][16];
 		for (byte i = 0; i != 4; ++i) {
@@ -13,7 +13,7 @@ public final class Memory {
 		return ret;
 	}
 	
-	//metoda zwracajÄ…ca amount danych od adresu adr
+	//metoda zwracaj¹ca amount danych od adresu adr
 	static public char[] getChars(int adr, int amount) throws Exception{
 		if(adr+amount>63) {
 			throw new Exception("Poza zakresem");
@@ -25,15 +25,15 @@ public final class Memory {
 		return ret;
 	}
 
-	private static short addr[] = { -1, -1, -1, -1 }; // adresy logiczne stron znajdujÄ…cych siÄ™ w poszczegÃ³lnych ramkach
-	private static byte ws[] = { -1, -1, -1 }; // working set â€“ zbiÃ³r roboczy
+	private static short addr[] = { -1, -1, -1, -1 }; // adresy logiczne stron znajduj¹cych siê w poszczególnych ramkach
+	private static byte ws[] = { -1, -1, -1 }; // working set – zbiór roboczy
 	private static byte current = 0; // indeks aktualnie rozpatrywanego elemntu zbioru roboczego
 	// ramki
 	private static char frames[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0 };
 
-	// metoda zapisujÄ…ca, wykorzystywana wewnÄ…trz moduÅ‚u zarzÄ…dzania pamiÄ™ciÄ…
+	// metoda zapisuj¹ca, wykorzystywana wewn¹trz modu³u zarz¹dzania pamiêci¹
 	static void write(byte p, byte d, char[] data) {
 		for (byte i = 0; i != 4; ++i) {
 			if (addr[i] == p) {
@@ -61,7 +61,7 @@ public final class Memory {
 		return;
 	}
 
-	// metoda odczytujÄ…ca, wykorzystywana wewnÄ…trz moduÅ‚u zarzÄ…dzania pamiÄ™ciÄ…
+	// metoda odczytuj¹ca, wykorzystywana wewn¹trz modu³u zarz¹dzania pamiêci¹
 	static char[] read(byte p, byte d, byte n) {
 		char ret[] = new char[n];
 		for (byte i = 0; i != 4; ++i) {

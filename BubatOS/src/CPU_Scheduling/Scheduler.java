@@ -14,7 +14,7 @@ import interpreter.Interpreter;
  * */
 
 /*
- * MODU£ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
+ * MODUï¿½ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
  * Do zrobienia:
  * - Metoda Go: sekcja wykonywania rozkazow
  * - Watek postojowy: null czy init?
@@ -42,7 +42,7 @@ public class Scheduler {
 	
 	
 	/*
-	 * POLA ZAWNETRZNYCH MODU£ÓW
+	 * POLA ZAWNETRZNYCH MODUï¿½ï¿½W
 	 */
 	
 	/* Pole zawierajace wskaznik do interpretera(jesli metody interpretera nie sa statyczne) */
@@ -52,11 +52,11 @@ public class Scheduler {
 	private Process InitProcess;
 	
 	/*
-	 * POLA ZAWNETRZNYCH MODU£ÓW - KONIEC
+	 * POLA ZAWNETRZNYCH MODUï¿½ï¿½W - KONIEC
 	 */
 	
 	/*
-	 * STA£E
+	 * STAï¿½E
 	 */
 	
 	/*
@@ -115,7 +115,7 @@ public class Scheduler {
 	public static Process Running=null;
 	
 	/*
-	 * STA£E - KONIEC
+	 * STAï¿½E - KONIEC
 	 */
 	
 	/*
@@ -208,7 +208,7 @@ public class Scheduler {
 		/* Zabezpieczenie przed bledem */
 		if (process.getState()==Process.processState.Ready) {
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
-		KiDispatcherReadyListHead.get(PriorityNumber).addLast(process);
+		KiDispatcherReadyListHead.elementAt(PriorityNumber).addLast(process);
 		
 		/* Zmieniamy stan bitu na masce bitowej na true jesli byla ustawiona na false*/
 		if (KiReadySummary[PriorityNumber]==false) {
@@ -235,10 +235,10 @@ public class Scheduler {
 		/* Pobranie wskaznika do kolejki w ktorej dany proces aktualnie sie znajduje */
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
 		/* Usuniecie procesu z danej kolejki */
-		boolean isRemoved= KiDispatcherReadyListHead.get(PriorityNumber).remove(process);
+		boolean isRemoved= KiDispatcherReadyListHead.elementAt(PriorityNumber).remove(process);
 		
 		/* Zmiana stanu bitu na masce bitowej w przypadku gdy kolejka jest pusta*/
-		if (KiDispatcherReadyListHead.get(PriorityNumber).isEmpty()) {
+		if (KiDispatcherReadyListHead.elementAt(PriorityNumber).isEmpty()) {
 			KiReadySummary[PriorityNumber]=false;
 			}
 		
@@ -248,9 +248,9 @@ public class Scheduler {
 				/* Sprawdzenie bitu maski bitowej odpowiadajacej za dany numer priorytetu*/
 				if(KiReadySummary[iterator]==true) {
 					
-					KiDispatcherReadyListHead.get(iterator).remove(process);
+					KiDispatcherReadyListHead.elementAt(PriorityNumber).remove(process);
 					/* Zmiana stanu bitu na masce bitowej w przypadku gdy kolejka jest pusta*/
-					if (KiDispatcherReadyListHead.get(iterator).isEmpty()) {
+					if (KiDispatcherReadyListHead.elementAt(iterator).isEmpty()) {
 						KiReadySummary[iterator]=false;
 						}
 					}
@@ -291,7 +291,7 @@ public class Scheduler {
 			/* Sprawdzenie bitu maski bitowej odpowiadajacej za dany numer priorytetu*/
 			if(KiReadySummary[iterator]==true) {
 				/* Pobranie pierwszego procesu z kolejki*/
-				Process foundThread=KiDispatcherReadyListHead.get(iterator).getFirst();
+				Process foundThread=KiDispatcherReadyListHead.elementAt(iterator).getFirst();
 				
 				/* Sprawdzenie czy nie wystapil blad
 				 * - proces ma inny stan niz gotowy
@@ -303,9 +303,9 @@ public class Scheduler {
 				}
 				else {
 					/* Jesli proces z jakiegos dziwnego powodu nie ma statusu Ready a nadal jest w kolejce to powinien zostac z niej usuniety*/
-					KiDispatcherReadyListHead.get(iterator).removeFirst();
+					KiDispatcherReadyListHead.elementAt(iterator).removeFirst();
 					/* Zmiana stanu bitu na masce bitowej w przypadku gdy kolejka jest pusta*/
-					if (KiDispatcherReadyListHead.get(iterator).isEmpty()) {
+					if (KiDispatcherReadyListHead.elementAt(iterator).isEmpty()) {
 						KiReadySummary[iterator]=false;
 						}
 					
@@ -400,7 +400,7 @@ public class Scheduler {
 			/* Sprawdzenie bitu maski bitowej odpowiadajacej za dany numer priorytetu*/
 			if(KiReadySummary[iterator]==true) {
 				/* Iteracja po procesach w danej kolejce w celu znalezienia glodzonych watkow */
-				Iterator<Process> it=KiDispatcherReadyListHead.get(iterator).iterator();
+				Iterator<Process> it=KiDispatcherReadyListHead.elementAt(iterator).iterator();
 				while(it.hasNext()){
 					Process process=it.next();
 					/* Sprawdzenie czy watek zostal zaglodzony */

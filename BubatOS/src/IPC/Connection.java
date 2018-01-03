@@ -9,7 +9,7 @@ public class Connection {
     private Server server = null;
     private Client client = null;
     protected String serverName = null;
-    protected String clientName = null;
+    String clientName = null;
     private int serverPort;
     //Semaphore semaphoreS = null;
     //Semaphore semaphoreC = null;
@@ -38,9 +38,17 @@ public class Connection {
         else System.out.println("Nie ma takiego polaczenia");
     }
 
-    public void readMessage(String Pname) {
-        if (Pname.equals(serverName)) server.read();
-        else System.out.println("Nie ma takiego polaczenia");
+    public String readMessage(String Pname) {
+    	//marcin - zmienione void na String
+        if (Pname.equals(serverName)) 
+        {
+        	return server.read();
+        }
+        else
+        {
+        	System.out.println("Nie ma takiego polaczenia");
+        	return "Nie ma takiego polaczenia";
+        }
     }
 
     public void endConnection(String P1, String P2) {

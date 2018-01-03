@@ -6,15 +6,25 @@ import java.util.List;
 
 public class Handler {
 
-       static List<Connection>xxx = new ArrayList<>();
+       static public List<Connection>xxx = new ArrayList<>();
 
     public static Connection getFromList(String P1, String P2) {
-        for (Connection x : xxx) {
+        for (Connection x : Handler.xxx) {
             if (x.serverName.equals(P1) && x.clientName.equals(P2)) return x;
 
         }
         return null;
     }
+    
+    public static Connection readfromlist(String P1)
+    {
+    	for(Connection x: Handler.xxx)
+    	{
+    		if(x.serverName.equals(P1)) return x;
+    	}
+    	return null;
+    }
+    
     public static void main(String[] args) {
         Connection x = new Connection("a", "b");
 //        x.sendMessage("a", "b", "czesc");

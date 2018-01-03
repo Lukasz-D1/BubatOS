@@ -2,6 +2,9 @@ package interpreter;
 
 import com.sun.javafx.image.impl.ByteBgraPre;
 import com.sun.org.apache.xalan.internal.xsltc.runtime.BasisLibrary;
+
+import CPU_Scheduling.Scheduler;
+
 import java.util.List;
 import java.util.Vector;
 import jdk.nashorn.internal.runtime.regexp.RegExpMatcher;
@@ -226,19 +229,22 @@ public class Interpreter
         }else if(command.elementAt(0).equals("RF")) //Czytanie z pliku
         {
         	//TU ZROBIC
+        	Scheduler.Running.processTab.write(Integer.parseInt(command.elementAt(2)), mainDrive.readFile(command.elementAt(1), Integer.parseInt(command.elementAt(3))));
             //write(BasisLibrary.stringToInt(command.elementAt(1)),readFile(command.elementAt(1),BasisLibrary.stringToInt(command.elementAt(2))));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
-            /*String a = new String();
-            try {
-                a=readString(command.elementAt(2),command.elementAt(3));
-            } catch (Exception e) 
-            {
-                throw new Exception("Poza zakresem");
-            } */
-            //writeFile(command.elementAt(1),a);
+        	char[] zwrot = Scheduler.Running.processTab.read(Integer.parseInt(command.elementAt(2)), Integer.parseInt(command.elementAt(3)));
+            
+        	String zw = "";
+        	
+        	for(char z1 : zwrot)
+        	{
+        		zw+=z1;
+        	}
+        	
+        	mainDrive.writeFile(command.elementAt(1), zw);
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu

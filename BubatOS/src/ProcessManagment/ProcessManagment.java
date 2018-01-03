@@ -1,6 +1,9 @@
 package ProcessManagment;
 
 import java.util.List;
+
+import CPU_Scheduling.Scheduler;
+
 import java.util.LinkedList;
 
 public class ProcessManagment {
@@ -30,12 +33,19 @@ public class ProcessManagment {
 	// Modyfikacja pól stworzonego procesu: nowy_proces.setProcessName("nazwa");
 	// Zwrócić uwagę na to, że ID procesu zawsze będzie dobrze nadawane - statyczne pole licznik procesów.
 	public Process fork(Process parent) {
-			
+		Process process;
+		if (parent.schedulingInformations.getDefaultPriorityNumber()!=this.mainProcess.schedulingInformations.getPriorityNumber())
+		{
 		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
-		Process process = new Process(parent.getProcessName(),parent.getSizeOfFile(), parent.getFileName());
+		process = new Process(parent);
+		}
+		else { 
+			process = new Process(parent.getProcessName(), parent.getSizeOfFile(), parent.getFileName());
+		}
 		
 		// Ustawienie ID rodzica.
 		process.setPPID(parent.getPID());
+		
 		
 		// Dodanie procesu do listy procesów.
 		processList.add(process);

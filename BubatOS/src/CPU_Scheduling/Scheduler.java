@@ -495,7 +495,10 @@ public class Scheduler {
 			
 			/* POBRANIE OSTATNICH ZAPISANYCH STANOW REJESTRU Z BLOKU KONTROLNEGO PROCESU */
 			
-			_InterpreterModule.setRegister(Scheduler.Running.getR1(), Scheduler.Running.getR2());
+			_InterpreterModule.getRegister(Scheduler.Running.getR1(), Scheduler.Running.getR2(), Scheduler.Running.getProgramCounter());
+			
+			
+			
 			
 			
 			

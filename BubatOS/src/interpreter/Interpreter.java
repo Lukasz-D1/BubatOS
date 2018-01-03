@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Vector;
 import jdk.nashorn.internal.runtime.regexp.RegExpMatcher;
 
-
-
 public class Interpreter 
 {
     public int commandCounter;
@@ -31,21 +29,24 @@ public class Interpreter
     }
     /*Odsyłanie zmienionych wartości rejestrów i licznika rozkazów, jako tablicę intów.
       Jeżeli potrzebuje ktoś inaczej, to dajcie znać.*/
-    public int[] setRegister(int registerA, int registerB)
+    public int setRegisterA()
     {
-        int[]registers = null;
-        registers[0]=registerA;
-        registers[1]=registerB;
-        registers[2]=commandCounter;
-        return registers;
+        return registerA;
     }
-    
+    public int setRegisterB()
+    {
+        return registerB;
+    }
+    public int setCommandCounter()
+    {
+        return commandCounter;
+    }
+    /*do JP i JZ*/
     public int skok(int commandCounter)
     {
         return commandCounter;
     }
-            
-    
+               
     /* Założenie jest takie, że dostaję rozkaz jako tablicę stringów (1,2,3 albo 4 elementową)
     i pole zerowe to nazwa rozkazu, a pozostałe pola to argumenty.*/
     public void getCommand(Vector<String> command)
@@ -213,7 +214,9 @@ public class Interpreter
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
-            writeFile(command.elementAt(1),read(command.elementAt(2),command.elementAt(3)));
+            String a = new String();
+            a=readString(command.elementAt(2),command.elementAt(3));
+            writeFile(command.elementAt(1),a);
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("PF")) //Wpisywanie do pliku z rejestru

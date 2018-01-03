@@ -21,7 +21,7 @@ public class ProcessManagment {
 		mainProcess = new Process("init", 4, "");
 		
 		// Ustawienie stanu procesu init na Gotowy.
-		mainProcess.setStan(mainProcess.state.Ready);
+		mainProcess.setStan(mainProcess.state.Running);
 		
 		//Dodanie procesu do listy procesów.
 		processList.add(mainProcess);
@@ -50,12 +50,22 @@ public class ProcessManagment {
 		return process;
 	}
 	
+	public void stop(Process proToStop) {
+		proToStop.setStan(Process.processState.Terminated);
+		System.out.println("Ustawiono Terminated");
+		this.ps();
+		if(proToStop.getPID() == 0)
+		{
+			System.exit(0);
+		}
+	}
 	
 	// Metoda odpowiedzialna za usunięcie danego procesu. Usuwamy go z listy, ustawiamy stan na Terminated.
 	// Zmieniamy ID rodzica na proces init.
 	// Łata ze zwalnianiem pamięci.
 	public void kill(Process proToKill) throws InterruptedException { 
 		proToKill.state = Process.processState.Terminated;
+		System.out.println("Ustawiono Terminated");
 		 for(Process pro : proToKill.processChildrenList){
 			 pro.setPPID(0);
 		 }
@@ -65,6 +75,12 @@ public class ProcessManagment {
 				 processList.remove(pro);
 			 }
 		 }
+		 this.ps();
+		 
+		 if(proToKill.getPID() == 0)
+			{
+				System.exit(0);
+			}
 		 
 		 /*
 		  * 
@@ -82,7 +98,7 @@ public class ProcessManagment {
 	public Process getProcessByName(String name){
 		Process process = new Process();
 		for(Process pro : processList){
-			if(pro.getProcessName() == name){
+			if(pro.getProcessName().equals(name)){
 				process = pro;
 			}
 		}

@@ -1,14 +1,7 @@
 package ProcessManagment;
 
 import java.util.List;
-<<<<<<< HEAD
-
-import CPU_Scheduling.Scheduler;
-import Memory_PC.PageTab;
-
-=======
 import java.io.IOException;
->>>>>>> branch 'master' of https://github.com/BMarcin/BubatOS.git
 import java.util.LinkedList;
 import CPU_Scheduling.Scheduler;
 import Memory_PC.PageTab;
@@ -45,8 +38,6 @@ public class Process {
 	// Rejestry.
 	private int r1, r2, programCounter; 								
 	
-
-
 	// Tablica stronic.
 	public PageTab processTab;											
 	// Nazwa pliku z danymi programu - niedopowiedziane przez moduły.
@@ -168,11 +159,6 @@ public class Process {
 		this.r2 = r2;
 		System.out.println("Aktualny stan rejestru B: " + this.r2);
 	}
-	
-
-	public void setProgramCounter(int programCounter) {
-		this.programCounter = programCounter;
-	}
 
 	// Zwróć aktualny stan procesu.
 	public processState getState() {
@@ -183,10 +169,20 @@ public class Process {
 	public void setStan(processState state) {
 		this.state = state;
 	}
-
+	
 	// Wypisz informacje o procesie.
-	public void printProcess(){
+	public String printProcess(){
+		//marcin z void na String
 		System.out.println("Proces o nazwie: " + this.getProcessName() + " ; ID: " + this.getPID() + " ; ID rodzica: " + this.getPPID() + " ; o stanie: " + this.getState());
+		char[] mem = this.processTab.getProcessMemory();
+		
+		String pam = "Zawartosc pamieci: \n";
+		for(char pp1 : mem)
+		{
+			pam+=pp1;
+		}
+		
+		return "Proces o nazwie: " + this.getProcessName() + "\n ID: " + this.getPID() + " \n ID rodzica: " + this.getPPID() + " \n o stanie: " + this.getState() + "o rejestrach R1,R2, program counter: " + this.getR1() + ", " + this.getR2() + ", " + this.getProgramCounter() + " \n rozmiarze w pamieci: " + this.getSizeOfFile() + " \n opcjonalnej sciezce do pliku: " + this.getFileName()+"\n"+pam;
 	}
 	
 	// Wypisz listę procesów potomnych.

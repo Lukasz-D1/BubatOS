@@ -39,6 +39,13 @@ public class Interpreter
         registers[2]=commandCounter;
         return registers;
     }
+    
+    public int skok(int commandCounter)
+    {
+        return commandCounter;
+    }
+            
+    
     /* Założenie jest takie, że dostaję rozkaz jako tablicę stringów (1,2,3 albo 4 elementową)
     i pole zerowe to nazwa rozkazu, a pozostałe pola to argumenty.*/
     public void getCommand(Vector<String> command)
@@ -171,7 +178,7 @@ public class Interpreter
         }else if(command.elementAt(0).equals("JP")) //Skok do rozkazu o podanym adresie
         {   
             //tu musi byc metoda wracająca do odpowiedniego rozkazu.
-           skok(command.elementAt(1));
+           skok(BasisLibrary.stringToInt(command.elementAt(1)));
             commandCounter=BasisLibrary.stringToInt(command.elementAt(1));
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("HT")) //Koniec programu
@@ -207,6 +214,11 @@ public class Interpreter
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
             writeFile(command.elementAt(1),read(command.elementAt(2),command.elementAt(3)));
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+    /*_______________________________________________________________*/
+        }else if(command.elementAt(0).equals("PF")) //Wpisywanie do pliku z rejestru
+        {
+            writeFile(command.elementAt(1),accu);
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu
@@ -250,7 +262,7 @@ public class Interpreter
         {
             if(accu==0)
             {
-                skok(command.elementAt(1));
+                skok(BasisLibrary.stringToInt(command.elementAt(1)));
             }
             commandCounter=BasisLibrary.stringToInt(command.elementAt(1));
         }

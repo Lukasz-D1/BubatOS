@@ -35,7 +35,9 @@ public class PageTab {
 	public PageTab(String fileName, int size) throws IOException {
 		if (fileName == "") {
 			this.fileName="";
-			size = 0;
+			this.size = size;
+			char[] data = new char[] {0};
+			tab = MassMemory.load(data);
 			return;
 		}
 		this.fileName = fileName;
@@ -292,7 +294,7 @@ public class PageTab {
 			throw new Exception("Poza zakresem");
 		}
 		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
-			return;
+			throw new Exception("Poza zakresem");
 		}
 		if ((ad % 16) + data.length > 32) { // zapisywanie na trzech stronach
 			byte p = tab[ad / 16];

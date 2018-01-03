@@ -39,7 +39,7 @@ public final class MassMemory {
 		}
 	}
 
-	public char[][] getPages(int number, int amount) throws Exception {
+	static public char[][] getPages(int number, int amount) throws Exception {
 		char[][] ret = new char[amount][16];
 		if (number + amount > 63) {
 			throw new Exception("Poza zakresem");
@@ -50,7 +50,7 @@ public final class MassMemory {
 		return ret;
 	}
 
-	public char[] getChars(int ad, int amount) throws Exception {
+	public static char[] getChars(int ad, int amount) throws Exception {
 		if (ad + amount > 1023) {
 			throw new Exception("Poza zakresem");
 		}

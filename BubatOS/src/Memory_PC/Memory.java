@@ -14,7 +14,7 @@ public final class Memory {
 	}
 	
 	//metoda zwracająca amount danych od adresu adr
-	static public char[] getPart(int adr, int amount) throws Exception{
+	static public char[] getChars(int adr, int amount) throws Exception{
 		if(adr+amount>63) {
 			throw new Exception("Poza zakresem");
 		}

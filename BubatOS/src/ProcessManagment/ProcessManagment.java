@@ -1,10 +1,10 @@
 package ProcessManagment;
 
 import java.util.List;
-
-import CPU_Scheduling.Scheduler;
-
+import java.io.IOException;
 import java.util.LinkedList;
+import FileSystem.Inode;
+import semaphore.Semaphore;
 
 public class ProcessManagment {
 	// Drzewo (lista) ze wszystkimi procesami.
@@ -14,11 +14,11 @@ public class ProcessManagment {
 	public Process mainProcess;
 
 	@SuppressWarnings("static-access")
-	public ProcessManagment() {
+	public ProcessManagment() throws IOException {
 		// Alokacja pamięci - do dodania. Łata.
 		// Tworzenie procesu init - głównego procesu uruchamianego w trakcie startu systemu.
 		// Konieczna deklaracja instancji obiektu ProcessManagment w main.
-		mainProcess = new Process("init", 0, "");
+		mainProcess = new Process("init", 4, "");
 		
 		// Ustawienie stanu procesu init na Gotowy.
 		mainProcess.setStan(mainProcess.state.Ready);
@@ -32,20 +32,13 @@ public class ProcessManagment {
 	// Pierwszym rodzicem zawsze init.
 	// Modyfikacja pól stworzonego procesu: nowy_proces.setProcessName("nazwa");
 	// Zwrócić uwagę na to, że ID procesu zawsze będzie dobrze nadawane - statyczne pole licznik procesów.
-	public Process fork(Process parent) {
-		Process process;
-		if (parent.schedulingInformations.getDefaultPriorityNumber()!=this.mainProcess.schedulingInformations.getPriorityNumber())
-		{
+	public Process fork(Process parent) throws IOException {
+			
 		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
-		process = new Process(parent);
-		}
-		else { 
-			process = new Process(parent.getProcessName(), parent.getSizeOfFile(), parent.getFileName());
-		}
+		Process process = new Process(parent.getProcessName(),parent.getSizeOfFile(), parent.getFileName());
 		
 		// Ustawienie ID rodzica.
 		process.setPPID(parent.getPID());
-		
 		
 		// Dodanie procesu do listy procesów.
 		processList.add(process);
@@ -61,7 +54,7 @@ public class ProcessManagment {
 	// Metoda odpowiedzialna za usunięcie danego procesu. Usuwamy go z listy, ustawiamy stan na Terminated.
 	// Zmieniamy ID rodzica na proces init.
 	// Łata ze zwalnianiem pamięci.
-	public void kill(Process proToKill) { 
+	public void kill(Process proToKill) throws InterruptedException { 
 		proToKill.state = Process.processState.Terminated;
 		 for(Process pro : proToKill.processChildrenList){
 			 pro.setPPID(0);
@@ -79,9 +72,9 @@ public class ProcessManagment {
 		  * 
 		  */
 		 
-		 for(Inode ino : proToKill.fileList){
-			 	ino.v();
-			 }
+		 for(Inode ino : proToKill.fileList)
+		 {
+			 	ino.s.V();
 		 }
 	}
 	

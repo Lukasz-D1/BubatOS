@@ -1,8 +1,9 @@
+package ProcessManagment;
 
 public class Main {
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
-		ProcessManagment p1 = new ProcessManagment();
+		/*ProcessManagment p1 = new ProcessManagment();
 		
 		
 		System.out.println(p1.mainProcess.getProcessName());
@@ -21,6 +22,6 @@ public class Main {
 		System.out.println(cztery.getProcessName());
 		
 		jeden.showProcessChildrenList();
-		p1.ps();
+		p1.ps();*/
 	}
 }

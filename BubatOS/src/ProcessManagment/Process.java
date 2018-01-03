@@ -2,7 +2,7 @@ package ProcessManagment;
 
 import java.util.List;
 import java.util.LinkedList;
-import CPU_Scheduling.Scheduler;
+//import CPU_Scheduling.Scheduler;
 
 
 /* 
@@ -32,8 +32,6 @@ public class Process {
 	// Licznik procesów, który pomaga w nadawaniu ID.
 	private static int processCounter = 0; 								
 
-		// private int processPriority;
-	
 	// Rejestry.
 	private int r1, r2, programCounter; 								
 	
@@ -45,6 +43,16 @@ public class Process {
 	// Rozmiar pliku.
 	private int sizeOfFile;
 
+	// Lista iWęzłów na których operuje proces.
+	
+	/*
+	 * 
+	 * Semafory tutaj kurwa mać.
+	 * 
+	 */
+	
+	List<Inode> fileList = new LinkedList<Inode>(); 
+	
 	// Konstruktor domyślny.
 	public Process() {
 
@@ -212,6 +220,18 @@ public class Process {
 	public String getFileName() {
 		return fileName;
 	}
+	
+	/*
+	 * 
+	 * Semafory tutaj
+	 * 
+	 */
+	
+	public void addToInodeList(Inode file){
+		fileList.add(file);
+	}
+	
+	
 	/*
 	 * ================================================================================================
 	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA
@@ -247,11 +267,11 @@ public class Process {
 			
 			/* Ustawienie domyslnej wartosci priorytetu 
 			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
-			this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
+		//	this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
 			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
 			this.PriorityNumber = this.DefaultPriorityNumber;
 			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
-			this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
+		//	this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
 			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
 			this.GivenQuantumAmount = this.DefaultGivenQuantumAmount;
 			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */

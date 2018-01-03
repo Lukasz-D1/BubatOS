@@ -3,7 +3,7 @@ package ProcessManagment;
 import java.util.List;
 
 import CPU_Scheduling.Scheduler;
-
+import Memory_PC.PageTab;
 
 import java.util.LinkedList;
 //import CPU_Scheduling.Scheduler;
@@ -39,6 +39,8 @@ public class Process {
 	// Rejestry.
 	private int r1, r2, programCounter; 								
 	
+
+
 	// Tablica stronic.
 	private PageTab processTab;											
 	// Nazwa pliku z danymi programu - niedopowiedziane przez moduły.
@@ -186,6 +188,11 @@ public class Process {
 		System.out.println("Poprzedni stan rejestru B: " + this.r2);
 		this.r2 = r2;
 		System.out.println("Aktualny stan rejestru B: " + this.r2);
+	}
+	
+
+	public void setProgramCounter(int programCounter) {
+		this.programCounter = programCounter;
 	}
 
 	// Zwróć aktualny stan procesu.

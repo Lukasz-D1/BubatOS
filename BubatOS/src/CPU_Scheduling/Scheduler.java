@@ -498,12 +498,13 @@ public class Scheduler {
 			_InterpreterModule.getRegister(Scheduler.Running.getR1(), Scheduler.Running.getR2(), Scheduler.Running.getProgramCounter());
 			
 			
-			
-			
-			
-			
 			/* WYKONANIE ROZKAZU W INTERPETERZE*/
+			_InterpreterModule.getCommand(Scheduler.Running.getProcessTab().getCommand(Scheduler.Running.getProgramCounter()));
 			
+			/* Ustawienie stanow rejestrow po wykonaniu rozkazu  */
+			Scheduler.Running.setR1(_InterpreterModule.setRegisterA());
+			Scheduler.Running.setR2(_InterpreterModule.setRegisterA());
+			Scheduler.Running.setProgramCounter(_InterpreterModule.setCommandCounter());
 			
 			
 			/* ZAPISANIE INFORMACJI DO BLOKU KONTROLNEGO PROCESU

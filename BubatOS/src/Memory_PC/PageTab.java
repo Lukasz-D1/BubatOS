@@ -17,10 +17,10 @@ public class PageTab {
 	byte comP = 0;
 	byte comD = 0;
 
-	public char[][] getProcessMemory() {
-		char[][] ret = new char[tab.length][16];
+	public char[] getProcessMemory() {
+		char[] ret = new char[size];
 		for (byte i = 0; i != size; ++i) {
-			ret[i/16][i%16] = Memory.read(tab[i/16], (byte) (i%16));
+			ret[i] = Memory.read(tab[i/16], (byte) (i%16));
 		}
 		return ret;
 	}

@@ -20,7 +20,7 @@ public class Process {
 	// ID procesu.
 	private int PID; 													
 	// ID rodzica procesu.
-	private int PPID; 													
+	private int PPID = 0; 													
 	// Lista dzieci procesu.
 	List<Process> processChildrenList = new LinkedList<Process>(); 		
 	// Dostępne stany - Nowy, Działający, Oczekujący, Gotowy, Zakończony.
@@ -52,7 +52,7 @@ public class Process {
 
 	// Konstruktor właściwy. Przyjmowane parametry: nazwa procesu, ID rodzica (potrzebne do struktury hierarchicznej).
 	// Dodatkowo parametr albo pamięć, albo nazwa pliku.
-	public Process(String name, int parentID, Memory memory) {
+	public Process(String name, int sizeOfFile, String fileName) {
 		
 		// Nadawanie ID z pomocą licznika procesów.
 		this.PID = processCounter;
@@ -60,16 +60,15 @@ public class Process {
 		
 		// Nadawanie nazwy.
 		this.processName = name;
-
-		this.PPID = parentID;
+		this.fileName = fileName;
+		this.sizeOfFile = sizeOfFile;
+		this.processTab = new PageTab(fileName, sizeOfFile);
 		this.state = processState.New;
-		// this.processPriority = 0;
-		this.processMemory = memory;
+ 
 		this.r1 = 0;
 		this.r2 = 0;
 		this.programCounter = 0;
-		// this.base = 0;
-		// this.limit = 0;
+
 		/*
 		 * Nadanie wartosci domyslnych polu odpowiadajacemu za przechowywanie
 		 * informacji potrzebnych planiscie
@@ -172,21 +171,7 @@ public class Process {
 		}
 	}
 	
-	// 
-	//
-	//
-	//
-	//
-	//
-	//Potrzebna sekcja odpowiedzialna za pamięć.
-	//
-	//
-	//
-	//
-	//
-	//
-	
-	
+		
 	/*
 	 * public void setBase(int base) { this.base = base; }
 	 * 
@@ -202,7 +187,31 @@ public class Process {
 	/*
 	 * public int getProcessPriority() { return processPriority; }
 	 */
-
+	
+	
+	public void setProcessTab(PageTab processTab) {
+		this.processTab = processTab;
+	}
+	
+	public PageTab getProcessTab() {
+		return processTab;
+	}
+	
+	public void setSizeOfFile(int sizeOfFile) {
+		this.sizeOfFile = sizeOfFile;
+	}
+	
+	public int getSizeOfFile() {
+		return sizeOfFile;
+	}
+	
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+	
+	public String getFileName() {
+		return fileName;
+	}
 	/*
 	 * ================================================================================================
 	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA

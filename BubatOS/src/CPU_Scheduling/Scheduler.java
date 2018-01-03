@@ -17,7 +17,7 @@ import interpreter.Interpreter;
 /*
  * MODUŁ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
  * Do zrobienia:
- * - Metoda Go: sekcja wykonywania rozkazow 
+ * - Metoda Go: sekcja wykonywania rozkazow
  * - Watek postojowy: null czy init?
  * - Informowanie planisty o zmianie statusu watku(Waiting,Terminated) - planista generalnie jest przed tym zabezpieczony, ale nie powinien przechowywac w kolejkach procesow niegotowych
  * nawet jesli ich nigdy nie uzyje i skasuje po jakims czasie, bo Pan Doktor moze zechciec zobaczyc co sie znajduje w tych kolejkach

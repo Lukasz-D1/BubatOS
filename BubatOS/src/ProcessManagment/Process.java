@@ -88,6 +88,32 @@ public class Process {
 
 		System.out.println("Utworzono proces o nazwie: " + processName + ", i ID numer: " + PID);
 	}
+	
+	public Process(Process parent) {
+		// Nadawanie ID z pomocą licznika procesów.
+		this.PID = processCounter;
+		processCounter++;
+		
+		// Nadawanie nazwy.
+		this.processName = parent.processName;
+		this.fileName = parent.fileName;
+		this.sizeOfFile = parent.sizeOfFile;
+		this.processTab = new PageTab(fileName, sizeOfFile);
+		this.state = processState.New;
+ 
+		this.r1 = 0;
+		this.r2 = 0;
+		this.programCounter = 0;
+
+		/*
+		 * Nadanie wartosci domyslnych polu odpowiadajacemu za przechowywanie
+		 * informacji potrzebnych planiscie
+		 */
+		this.schedulingInformations = new Process.SchedulingInfo(parent);
+
+		System.out.println("Utworzono proces o nazwie: " + processName + ", i ID numer: " + PID);
+
+	}
 
 	// Zwróć nazwę procesu.
 	public String getProcessName() {
@@ -294,6 +320,27 @@ public class Process {
 		/*
 		 * KONSTRUKTOR - KONIEC
 		 */ 
+		
+		/*
+		 * KONSTRUKTOR DZIEDZICZĄCY
+		 */ 
+		public SchedulingInfo(Process parent) {
+			
+			/* Ustawienie domyslnej wartosci priorytetu 
+			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
+		this.DefaultPriorityNumber = parent.schedulingInformations.getDefaultPriorityNumber();
+			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
+			this.PriorityNumber = parent.schedulingInformations.getDefaultPriorityNumber();
+			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
+		this.DefaultGivenQuantumAmount = parent.schedulingInformations.getDefaultGivenQuantumAmount();
+			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
+			this.GivenQuantumAmount = parent.schedulingInformations.GivenQuantumAmount;
+			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */
+			this.UsedQuantumAmount = 0;
+		}
+		/*
+		 * KONSTRUKTOR DZIEDZICZĄCY - KONIEC
+		 */ 
 
 		/*
 		 * SETTERY I GETTERY
@@ -337,7 +384,14 @@ public class Process {
 		public void setUsedQuantumAmount(byte usedQuantumAmount) {
 			UsedQuantumAmount = usedQuantumAmount;
 		}
+		
+		public void setDefaultPriorityNumber(byte defaultPriorityNumber) {
+			DefaultPriorityNumber = defaultPriorityNumber;
+		}
 
+		public void setDefaultGivenQuantumAmount(byte defaultGivenQuantumAmount) {
+			DefaultGivenQuantumAmount = defaultGivenQuantumAmount;
+		}
 		/*
 		 * SETTERY I GETTERY - KONIEC
 		 */

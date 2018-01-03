@@ -16,6 +16,14 @@ public class PageTab {
 	byte comP = 0;
 	byte comD = 0;
 
+	public char[][] getProcessMemory(){
+		char[][] ret=new char[tab.length][16];
+		for(byte i=0; i!=tab.length; ++i) {
+			ret[i]=Memory.read(tab[i],(byte) 0,(byte) 16);
+		}
+		return ret;
+	}
+	
 	public String getFileName() {
 		return fileName;
 	}

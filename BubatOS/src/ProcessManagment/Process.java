@@ -196,6 +196,10 @@ public class Process {
 		this.state = state;
 	}
 	
+	public void setProgramCounter(int programCounter) {
+		this.programCounter = programCounter;
+	}
+	
 	// Wypisz informacje o procesie.
 	public String printProcess(){
 		//marcin z void na String

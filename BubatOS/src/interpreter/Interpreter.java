@@ -49,7 +49,7 @@ public class Interpreter
                
     /* Założenie jest takie, że dostaję rozkaz jako tablicę stringów (1,2,3 albo 4 elementową)
     i pole zerowe to nazwa rozkazu, a pozostałe pola to argumenty.*/
-    public void getCommand(Vector<String> command)
+    public void getCommand(Vector<String> command) throws Exception
     {     
        if(command.elementAt(0).equals("AD")) // Dodawanie rejestrów
        {
@@ -215,13 +215,13 @@ public class Interpreter
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
             String a = new String();
-            a=readString(command.elementAt(2),command.elementAt(3));
+            try {
+                a=readString(command.elementAt(2),command.elementAt(3));
+            } catch (Exception e) 
+            {
+                throw new Exception("Poza zakresem");
+            } 
             writeFile(command.elementAt(1),a);
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
-    /*_______________________________________________________________*/
-        }else if(command.elementAt(0).equals("PF")) //Wpisywanie do pliku z rejestru
-        {
-            writeFile(command.elementAt(1),accu);
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu
@@ -251,15 +251,15 @@ public class Interpreter
             x.sendMessage(command.elementAt(1),command.elementAt(2),command.elementAt(3));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("CC")) //Wysłanie komunikatu
+        }else if(command.elementAt(0).equals("CC")) //Tworzenie połączenia
         {
             Connection x= new Connection(command.elementAt(1),command.elementAt(2));
             commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
-        }else if(command.elementAt(0).equals("EC")) //Wysłanie komunikatu
+        }else if(command.elementAt(0).equals("EC")) //Kończenie połączenia
         {
             x.endConnection(command.elementAt(1),command.elementAt(2));
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartości rejestru
         {

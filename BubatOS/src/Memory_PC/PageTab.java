@@ -11,8 +11,11 @@ public class PageTab {
 	int size;
 	String fileName;
 
+ 
+	
+	int[][] jumpedIn = new int[4][2]; //zbiór danych o dotychczas wykonanych procesach
+	byte ji = 0; //zmienna pomocnicza do zarządzania powyższą tablicą
 	// Poniższe 3 zmienne służą do wyciągania komend
-	int[][] jumpedIn = new int[4][2];
 	int lastCommand = -1;
 	byte comP = 0;
 	byte comD = 0;
@@ -150,11 +153,48 @@ public class PageTab {
 	}
 
 	// Pobiera komendę spod podanego adresu logicznego
-	public Vector<String> getCommandFromAdress(int adr) {
+	public Vector<String> getCommandFromAddress(int addr) {
 		Vector<String> ret = new Vector<String>();
+		for(int i=0; i!=8; ++i) {
+			if(addr==jumpedIn[i][1]) {
+				lastCommand=jumpedIn[i][0];
+				char c;
+				String str = "";
+				while (true) {
+					for (; comD != 16; comD++) {
+						if (str == "HX" || str == "hx") {
+							ret.add(str);
+							comD++;
+							if (comD > 15) {
+								++comP;
+								comD -= 16;
+							}
+							return ret;
+						}
+						c = Memory.read(tab[comP], comD);
+						if (c == 10) {
+							ret.add(str);
+							comD++;
+							if (comD > 15) {
+								++comP;
+								comD -= 16;
+							}
+							return ret;
+						} else if (c == 32) {
+							ret.add(str);
+							str = "";
+						} else {
+							str += c;
+						}
+					}
+					comD = 0;
+					++comP;
+				}
+			}
+		}
 		lastCommand = 0;
 		for (comP = 0;; ++comP) {
-			if ((comP * 16 + comD) == adr) {
+			if ((comP * 16 + comD) == addr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -162,20 +202,19 @@ public class PageTab {
 				break;
 			}
 			for (comD = 0; comD != 16; ++comD) {
-				if ((comP * 16 + comD) == adr) {
+				if ((comP * 16 + comD) == addr) {
 					if (comD == 16) {
 						comD = 0;
 						++comP;
 					}
 					break;
 				}
-				// System.out.println("comP="+comP+" comD="+ comD);
 				char c = Memory.read(tab[comP], comD);
 				if (c == 10) {
 					++lastCommand;
 				}
 			}
-			if ((comP * 16 + comD) == adr) {
+			if ((comP * 16 + comD) == addr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -203,6 +242,9 @@ public class PageTab {
 						++comP;
 						comD -= 16;
 					}
+					ji%=8;
+					jumpedIn[ji][1]=addr;
+					++ji;
 					return ret;
 				} else if (c == 32) {
 					ret.add(str);

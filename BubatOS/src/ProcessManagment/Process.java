@@ -2,6 +2,12 @@ import java.util.List;
 import java.util.LinkedList;
 import CPU_Scheduling.Scheduler;
 
+
+/* 
+ * KWESTIA DO OMOWIENIA:
+ * - dziedziczenie priorytetu od procesu macierzystego
+ * */
+
 public class Process {
 	/*
 	Blok kontrolny procesu - PCB
@@ -199,30 +205,54 @@ public class Process {
 	 */
 
 	/*
+	 * ================================================================================================
 	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA
+	 * ================================================================================================
 	 */
 
+	/* Pole podklasy SchedulingInfo przechowujace informacje dla planisty */
 	public SchedulingInfo schedulingInformations;
 
+	/*
+	 * PODKLASA SCHEDULINGINFO
+	 */
 	public class SchedulingInfo {
 
+		/* Aktualnie uzywany numer priorytetu */
 		private byte PriorityNumber;
+		/* Priorytet bazowy */
 		private byte DefaultPriorityNumber;
+		/* Domyslna ilosc przydzielonych jednostek kwantow czasu */
 		private byte DefaultGivenQuantumAmount;
-
+		/* Aktualnie przydzielona ilosc jednostek kwantu czasu */
 		private byte GivenQuantumAmount;
+		/* Ilosc zuzytych jednostek kwantow czasu (zeruje sie po osiagnieciu wartosci GivenQuantumAmount) */
 		private byte UsedQuantumAmount;
-		private short AwaitingQuantumLength; // do wyrzucenia
+		/* Wartosc licznika procesora w ktorym proces ostatni raz otrzymal procesor */
 		private short SchedulersLastQuantumAmountCounter;
 
+		/*
+		 * KONSTRUKTOR 
+		 */
 		public SchedulingInfo() {
-			this.PriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
-			this.DefaultPriorityNumber = PriorityNumber;
+			/* !!!DZIEDZICZENIE!!! */
+			
+			/* Ustawienie domyslnej wartosci priorytetu 
+			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
+			this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
+			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
+			this.PriorityNumber = this.DefaultPriorityNumber;
+			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
 			this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
+			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
 			this.GivenQuantumAmount = this.DefaultGivenQuantumAmount;
+			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */
 			this.UsedQuantumAmount = 0;
-			this.AwaitingQuantumLength = 0;
+			
 		}
+		/*
+		 * KONSTRUKTOR - KONIEC
+		 */ 
 
 		/*
 		 * SETTERY I GETTERY
@@ -267,20 +297,18 @@ public class Process {
 			UsedQuantumAmount = usedQuantumAmount;
 		}
 
-		public short getAwaitingQuantumLength() {
-			return AwaitingQuantumLength;
-		}
-
-		public void setAwaitingQuantumLength(short awaitingQuantumLength) {
-			AwaitingQuantumLength = awaitingQuantumLength;
-		}
 		/*
 		 * SETTERY I GETTERY - KONIEC
 		 */
 
 	}
 	/*
+	 * PODKLASA SCHEDULINGINFO - KONIEC
+	 */
+	/*
+	 * ================================================================================================
 	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA - KONIEC
+	 * ================================================================================================
 	 */
 
 }

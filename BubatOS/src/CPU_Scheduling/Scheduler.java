@@ -14,7 +14,7 @@ import interpreter.Interpreter;
  * */
 
 /*
- * MODU≈Å JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
+ * MODU£ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
  * Do zrobienia:
  * - Metoda Go: sekcja wykonywania rozkazow
  * - Watek postojowy: null czy init?
@@ -42,7 +42,7 @@ public class Scheduler {
 	
 	
 	/*
-	 * POLA ZAWNETRZNYCH MODU≈Å√ìW
+	 * POLA ZAWNETRZNYCH MODU£”W
 	 */
 	
 	/* Pole zawierajace wskaznik do interpretera(jesli metody interpretera nie sa statyczne) */
@@ -52,11 +52,11 @@ public class Scheduler {
 	private Process InitProcess;
 	
 	/*
-	 * POLA ZAWNETRZNYCH MODU≈Å√ìW - KONIEC
+	 * POLA ZAWNETRZNYCH MODU£”W - KONIEC
 	 */
 	
 	/*
-	 * STA≈ÅE
+	 * STA£E
 	 */
 	
 	/*
@@ -115,7 +115,7 @@ public class Scheduler {
 	public static Process Running=null;
 	
 	/*
-	 * STA≈ÅE - KONIEC
+	 * STA£E - KONIEC
 	 */
 	
 	/*
@@ -165,21 +165,27 @@ public class Scheduler {
 			}
 			/* Ustawienie wartosci true na bicie watku postojowego, poniewaz jest on zawsze dostepny */
 			KiReadySummary[0]=true;
-		}
+		
 		
 		
 		
 	
 		/* Utworzenie tablicy kolejek procesow gotowych */
 		KiDispatcherReadyListHead=new Vector<LinkedList<Process>>(PriorityAmount);
-		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
-			LinkedList<Process> ListPointer=KiDispatcherReadyListHead.get(iterator);
+		KiDispatcherReadyListHead.setSize(PriorityAmount);
+		/*for (LinkedList<Process> ListPointer: KiDispatcherReadyListHead) {
 			ListPointer=new LinkedList<Process>();
+		}*/
+			 
+		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
+			KiDispatcherReadyListHead.add(iterator, new LinkedList<Process>());
 		}
 		/* INIT */
-		LinkedList<Process> ListPointer=KiDispatcherReadyListHead.get(0);
-		ListPointer=new LinkedList<Process>();
-		ListPointer.add(this.InitProcess);
+		//KiDispatcherReadyListHead.(0).add(this.InitProcess);
+		/*KiDispatcherReadyListHead.add(0, );*/
+		//ListPointer=new LinkedList<Process>();
+		//ListPointer.add(this.InitProcess);
+		}
 		
 	}
 	/*

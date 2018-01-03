@@ -16,22 +16,22 @@ public class PageTab {
 	byte comP = 0;
 	byte comD = 0;
 
-	public char[][] getProcessMemory(){
-		char[][] ret=new char[tab.length][16];
-		for(byte i=0; i!=tab.length; ++i) {
-			ret[i]=Memory.read(tab[i],(byte) 0,(byte) 16);
+	public char[][] getProcessMemory() {
+		char[][] ret = new char[tab.length][16];
+		for (byte i = 0; i != tab.length; ++i) {
+			ret[i] = Memory.read(tab[i], (byte) 0, (byte) 16);
 		}
 		return ret;
 	}
-	
+
 	public String getFileName() {
 		return fileName;
 	}
-	
+
 	public int getSize() {
 		return size;
 	}
-	
+
 	public PageTab(String fileName, int size) throws IOException {
 		this.fileName = fileName;
 		this.size = size;
@@ -66,7 +66,7 @@ public class PageTab {
 		int i = 0;
 		FileWriter Wr = new FileWriter(fileName);
 		while (i != size) {
-			Wr.write(Memory.read(tab[i/16], (byte) (i%16)));
+			Wr.write(Memory.read(tab[i / 16], (byte) (i % 16)));
 			++i;
 		}
 		Wr.close();
@@ -79,29 +79,29 @@ public class PageTab {
 			lastCommand = 0;
 			for (comP = 0;; ++comP) {
 				if (lastCommand == n) {
-					if(comD==16) {
-						comD=0;
+					if (comD == 16) {
+						comD = 0;
 						++comP;
 					}
 					break;
 				}
 				for (comD = 0; comD != 16; ++comD) {
 					if (lastCommand == n) {
-						if(comD==16) {
-							comD=0;
+						if (comD == 16) {
+							comD = 0;
 							++comP;
 						}
 						break;
 					}
-					//System.out.println("comP="+comP+" comD="+ comD);
+					// System.out.println("comP="+comP+" comD="+ comD);
 					char c = Memory.read(tab[comP], comD);
 					if (c == 10) {
 						++lastCommand;
 					}
 				}
 				if (lastCommand == n) {
-					if(comD==16) {
-						comD=0;
+					if (comD == 16) {
+						comD = 0;
 						++comP;
 					}
 					break;
@@ -141,18 +141,88 @@ public class PageTab {
 		}
 	}
 
+	//Pobiera komendę spod podanego adresu logicznego
+	public Vector<String> getCommandFromAdress(int adr) {
+		Vector<String> ret = new Vector<String>();
+		lastCommand = 0;
+		for (comP = 0;; ++comP) {
+			if ((comP*16+comD)==adr) {
+				if (comD == 16) {
+					comD = 0;
+					++comP;
+				}
+				break;
+			}
+			for (comD = 0; comD != 16; ++comD) {
+				if ((comP*16+comD)==adr) {
+					if (comD == 16) {
+						comD = 0;
+						++comP;
+					}
+					break;
+				}
+				// System.out.println("comP="+comP+" comD="+ comD);
+				char c = Memory.read(tab[comP], comD);
+				if (c == 10) {
+					++lastCommand;
+				}
+			}
+			if ((comP*16+comD)==adr) {
+				if (comD == 16) {
+					comD = 0;
+					++comP;
+				}
+				break;
+			}
+		}
+		String str = "";
+		while (true) {
+			for (; comD != 16; comD++) {
+				if (str == "HX" || str == "hx") {
+					ret.add(str);
+					comD++;
+					if (comD > 15) {
+						++comP;
+						comD -= 16;
+					}
+					return ret;
+				}
+				char c = Memory.read(tab[comP], comD);
+				if (c == 10) {
+					ret.add(str);
+					comD++;
+					if (comD > 15) {
+						++comP;
+						comD -= 16;
+					}
+					return ret;
+				} else if (c == 32) {
+					ret.add(str);
+					str = "";
+				} else {
+					str += c;
+				}
+			}
+			comD = 0;
+			++comP;
+		}
+	}
+
 	// metoda read w wersji zwracającej String
-	public String readString(int ad, int amount) {
+	public String readString(int ad, int amount) throws Exception {
 		return new StringBuilder().append(read(ad, amount)).toString();
 	}
 
 	// metoda write w akceptująca dane w formie String
-	public void write(int ad, String data) {
+	public void write(int ad, String data) throws Exception {
 		write(ad, data.toCharArray());
 	}
 
 	// metoda odczytująca amount znaków zaczynając od adresu ad
-	public char[] read(int ad, int amount) {
+	public char[] read(int ad, int amount) throws Exception {
+		if(ad+amount>size) {
+			throw new Exception("Poza zakresem");
+		}
 		if (ad + amount >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return null;
 		}
@@ -212,7 +282,10 @@ public class PageTab {
 	}
 
 	// metoda zapisująca znaki data zaczynając od adresu ad
-	public void write(int ad, char[] data) {
+	public void write(int ad, char[] data) throws Exception {
+		if(ad+data.length>size) {
+			throw new Exception("Poza zakresem");
+		}
 		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return;
 		}

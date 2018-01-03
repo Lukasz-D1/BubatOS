@@ -1,5 +1,6 @@
 package Memory;
 
+
 public final class MassMemory {
 	static byte free = 64; // liczba wolnych stron
 	static long states = 0; // zmienna przechowująca stan każdej strony
@@ -34,15 +35,17 @@ public final class MassMemory {
 
 	static void clear(byte tab[]) {
 		free += (byte) tab.length;
-		for (byte i = (byte) tab.length; i != 0; --i) {
-			states &= 0 << tab[i];
+		for (byte i = (byte) (tab.length-1); i != 0; --i) {
+			states &= -2 << tab[i]; //-2==0xfffffffffffffffe
 		}
 	}
 
 	//pomocnicza procedura służąca debugowaniu
 	static void show() {
 		System.out.println("MassMemory:");
-		for (byte i = 0; i != 64; ++i) {
+		System.out.println("states="+Long.toBinaryString(states));
+		System.out.println("free pages=" + free);
+		for (byte i = 0; i != 16; ++i) {
 			System.out.print(i+":");
 			for (byte j = 0; j != 16; j++) {
 				System.out.print(pages[i][j]);

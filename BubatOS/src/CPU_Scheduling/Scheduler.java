@@ -3,22 +3,31 @@ package CPU_Scheduling;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
-import java.util.function.Predicate;
 
 import ProcessManagment.Process;
+import interpreter.Interpreter;
 
-
+/* 
+ * FUNKCJE DLA INNYCH MODULOW:
+ * - ReadyThread(Process)
+ * - ReadyThread(Process, boolean IsItSemaphore)
+ * */
 
 /*
  * MODUŁ JESZCZE NIE GOTOWY - TO JEST NAJBARDZIEJ AKTUALNA WERSJA
  * Do zrobienia:
- * - dokończenie metody Go
- * - wątek postojowy?
- * - uwzglednienie przypadku gdy proces skonczy wykonywac sie przed uplynieciem kwantu czasu(trzeba znalezc nowy), jak wyglada usuwanie watku
+ * - Metoda Go: sekcja wykonywania rozkazow
+ * - Watek postojowy: null czy init?
+ * - Informowanie planisty o zmianie statusu watku(Waiting,Terminated) - planista generalnie jest przed tym zabezpieczony, ale nie powinien przechowywac w kolejkach procesow niegotowych
+ * nawet jesli ich nigdy nie uzyje i skasuje po jakims czasie, bo Pan Doktor moze zechciec zobaczyc co sie znajduje w tych kolejkach
  * Dodatkowe kwestie
- * - czy jesli wlaczy sie watek postojowy to oddajemy sterowanie do shella? raczej tak, zeby procesor nie pozostawal w bezczynnosci
  * - czy sa jakies rzeczy do robienia w czasie watku postojowego, rzekomo watek postojowy w Windows sluzy do zarzadzania pamiecia, ale tutaj nie musi
- * - jak bedzie wygladac procesor, czy bedzie malutka oddzielna klasa z dwoma rejestrami dostepna publicznie, same statyczne publiczne pola?
+ * - Czy robic: metoda wypisujaca aktualne procesy w kolejkach procesow gotowych??
+ * - Czy robic i jak: informacje dla Doktora
+ * - Jak wyglada usuwanie watku
+ * Informacje:
+ * - Jak wlacza sie postojowy watek planista oddaje sterowanie do shella niezaleznie czy kwant czasu sie skonczyl(zapobieganie marnotrawieniu procesora)
+ * 
  *  */
 
 
@@ -30,6 +39,21 @@ public class Scheduler {
 	 * ================================================================================================
 	 */
 	
+	
+	
+	/*
+	 * POLA ZAWNETRZNYCH MODUŁÓW
+	 */
+	
+	/* Pole zawierajace wskaznik do interpretera(jesli metody interpretera nie sa statyczne) */
+	Interpreter _InterpreterModule;
+	
+	/* Pole procesu INIT */
+	private Process _Init;
+	
+	/*
+	 * POLA ZAWNETRZNYCH MODUŁÓW - KONIEC
+	 */
 	
 	/*
 	 * STAŁE
@@ -60,10 +84,10 @@ public class Scheduler {
 	 */
 	private short QuantumAmountCounter=0;
 	
-	/*
-	 * KOMENTARZ
-	 */
+	/* Flaga wywlaszczenia procesu */
 	private boolean IsExpropriated=false;
+	
+	
 	
 	
 	/* Wartosci znaczacych priorytetow nadawane przez konstruktor gdy znana jest liczba priorytetow*/
@@ -90,6 +114,10 @@ public class Scheduler {
 	public static Process Running=null;
 	
 	/*
+	 * STAŁE - KONIEC
+	 */
+	
+	/*
 	 * ================================================================================================
 	 * POLA KLASY SCHEDULER - KONIEC
 	 * ================================================================================================
@@ -103,8 +131,12 @@ public class Scheduler {
 	 */
 	
 	@SuppressWarnings("unused")
-	public Scheduler() {
-		//Ustawienie wartosci domyslnych priorytetow adekwatinie do ilosci priorytetow
+	public Scheduler(Process init, Interpreter interpreter) {
+		
+		/* Przypisanie wartosci dla pola procesu */
+		this._InterpreterModule=interpreter;
+		
+		/* Ustawienie wartosci domyslnych priorytetow adekwatinie do ilosci priorytetow */
 		REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL=PriorityAmount-1;
 		VARIABLE_CLASS_THREAD_PRIORITY_IDLE=1;
 		VARIABLE_CLASS_THREAD_PRIORITY_TIME_CRITICAL=PriorityAmount/2;
@@ -113,30 +145,27 @@ public class Scheduler {
 		REALTIME_CLASS_THREAD_PRIORITY_NORMAL=(byte) ((REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL-REALTIME_CLASS_THREAD_PRIORITY_IDLE)/2+REALTIME_CLASS_THREAD_PRIORITY_IDLE);
 		///////
 		
-		//////////////////////
-		//Ustawienie maski bitowej
-		//Zabezpieczenie przed niemozliwym bledem
+		/* Ustawienie wartosci poczatkowych na masce bitowej */
 		if (PriorityAmount>0) {
-		KiReadySummary = new boolean[PriorityAmount];
-		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
-			KiReadySummary[iterator]=false;
+			/* Utworzenie maski o ilosci bitow odpowiadajacej ilosci priorytetow */
+			KiReadySummary = new boolean[PriorityAmount];
+			/* Wyzerowanie bitow na masce*/
+			for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
+				KiReadySummary[iterator]=false;
+			}
+			/* Ustawienie wartosci true na bicie watku postojowego, poniewaz jest on zawsze dostepny */
+			KiReadySummary[0]=true;
 		}
-		KiReadySummary[0]=true;
-		}
-		//////////////////
 		
 		
-		//Ustawienie kolejki procesow gotowych
 		
+	
+		/* Utworzenie tablicy kolejek procesow gotowych */
 		KiDispatcherReadyListHead=new Vector<LinkedList<Process>>(PriorityAmount);
 		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
-			
 			LinkedList<Process> nullList=KiDispatcherReadyListHead.get(iterator);
 			nullList=new LinkedList<Process>();
 		}
-		
-		
-		//////////////////////
 		
 	}
 	/*
@@ -155,7 +184,7 @@ public class Scheduler {
 	 * ADDTOREADYLIST
 	 * Mala funkcja pomocnicza dodajaca gotowy process na koniec odpowiedniej kolejki procesow gotowych
 	 */
-	void AddToReadyList(Process process) {
+	private void AddToReadyList(Process process) {
 		/* Zabezpieczenie przed bledem */
 		if (process.getState()==Process.processState.Ready) {
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
@@ -183,7 +212,9 @@ public class Scheduler {
 	 */
 	private void RemoveFromReadyList(Process process) {
 		
+		/* Pobranie wskaznika do kolejki w ktorej dany proces aktualnie sie znajduje */
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
+		/* Usuniecie procesu z danej kolejki */
 		boolean isRemoved= KiDispatcherReadyListHead.get(PriorityNumber).remove(process);
 		
 		/* Zmiana stanu bitu na masce bitowej w przypadku gdy kolejka jest pusta*/
@@ -198,7 +229,7 @@ public class Scheduler {
 				if(KiReadySummary[iterator]==true) {
 					
 					KiDispatcherReadyListHead.get(iterator).remove(process);
-					/* */
+					/* Zmiana stanu bitu na masce bitowej w przypadku gdy kolejka jest pusta*/
 					if (KiDispatcherReadyListHead.get(iterator).isEmpty()) {
 						KiReadySummary[iterator]=false;
 						}
@@ -209,6 +240,21 @@ public class Scheduler {
 	/*
 	 * REMOVEFROMREADYLIST - KONIEC
 	 */
+	
+	public void InformSchedulerModifiedState(Process process) {
+		/* Wyzerowanie informacji o zuzytych kwantach*/
+		process.schedulingInformations.setUsedQuantumAmount((byte) 0);
+		
+		
+		/* Wykonanie funkcji pomocniczej usuwajacej proces z listy*/
+		this.RemoveFromReadyList(process);
+		
+		/* Ustawienie aktualnie wykonywanego procesu na NULL */
+		if (Scheduler.Running.equals(process)) {
+		Scheduler.Running=null;
+		}
+		
+	}
 	
 	/*
 	 * FINDREADYTHREAD
@@ -266,7 +312,7 @@ public class Scheduler {
 	
 	/*
 	 * READYTHREAD (WERSJA DLA MODULU SEMAFORA)
-	 * Metoda udostepniana innym modulom do poinformowania planisty o stanie gotowosci danego procesu
+	 * Metoda udostepniona modulowi semafora do poinformowania planisty o stanie gotowosci danego procesu i podwyzszeniu jego priorytetu ze wzgledu na oczekiwanie
 	 */
 	public void ReadyThread(Process process, boolean isItSemaphore) {
 		/* Ustawienie odpowiedniego stanu procesu */
@@ -292,6 +338,11 @@ public class Scheduler {
 	/*
 	 * READYTHREAD (WERSJA DLA MODULU SEMAFORA) - KONIEC
 	 */
+	
+	/*
+	 * ISREADYTHREADEXPRIOPRIATING
+	 * FUNKCJA SPRAWDZAJACA CZY DANY PROCES WYWLASZCZA PROCESOR
+	 */
 	private void IsReadyThreadExpropriating(Process process) {
 		/* Jesli aktualnie jest wykonywany watek postojowy to i tak zostanie wywolana metoda ReadyThread zanim procesor wykona instrukcje, wiec
 		 * zaznaczamy flage tylko jesli */
@@ -304,6 +355,9 @@ public class Scheduler {
 			this.IsExpropriated=true;
 		}
 	}
+	/*
+	 * ISREADYTHREADEXPRIOPRIATING - KONIEC
+	 */
 	
 	/*
 	 * BALANCESETMANAGER
@@ -336,21 +390,17 @@ public class Scheduler {
 				}
 				
 			}
-		/* Wyzerowanie licznika */
-		QuantumAmountCounter=0;
 		}
 	/*
 	 * BALANCESETMANAGER - KONIEC
 	 */
 	
 	
+	/*
+	 * FUNKCJA GO
+	 * WYKONYWANIE KWANTU PROCESORA, GLOWNA FUNKCJA
+	 */
 	public void Go() {
-		//tutaj sprawdz czy sie zmienia jesli nie no to nie rob nic, a jesli tak to jest wywlaszczenie albo skonczyly sie rozkazy
-		//bool czy wywlaszczony
-		//bo jesli nie to nie szukaj nowego, chyba ze sie skonczy to wtedy zmien
-		//jesli zacznie czekac to inny modul zmieni Running na null?
-		// mozesz tez sprawdzic czy proces ma nadal status running albo czy nie jest pusty
-		//moze sie tez proces skonczyc w trakcie wykonywania i co wtedy
 		
 		/*Zmienna pomocnicza zliczajaca ilosc wykonanych instrukcji w danym kwancie czasu */
 		byte InstructionsExecuted=0;
@@ -366,48 +416,130 @@ public class Scheduler {
 			this.BalanceSetManager();
 		}
 		
+		/* Znalezienie procesu o najwyzszym priorytecie do wykonania*/
 		Scheduler.Running=this.FindReadyThread();
+		/* Zmiana stanu na running */
 		Scheduler.Running.setStan(Process.processState.Running);
 		
+		/* Petla wykonujaca rozkazy odpowiadajaca jednemu kwantowi czasu procesora */
 		while (InstructionsExecuted<Scheduler.InstructionsPerQuantum) {
 			
-			if (this.IsExpropriated==true) {
-				WasExpriopriatedDuringQuantum=true;
-				Scheduler.Running.setStan(Process.processState.Ready);
-				Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
-				if(Scheduler.Running.schedulingInformations.getUsedQuantumAmount()>=1) {
-					this.RemoveFromReadyList(Scheduler.Running);
-					this.AddToReadyList(Scheduler.Running);
-				}
+			/* Zabezpieczenie przed przypadkiem kiedy proces zostal ustawiony na stan Waiting lub Terminated 
+			 * (Oddzielna instrukcja warunkowa aby zapobiec bledom sprawdzania stanu procesu obiektu null*/
+			if (Scheduler.Running!=null &&  Scheduler.Running.getState()!=Process.processState.Running) {
+				/* Usuniecie z listy procesow gotowych */
+				this.RemoveFromReadyList(Scheduler.Running);
+				/* Znalezienie procesu o najwyzszym priorytecie do wykonania*/
 				Scheduler.Running=this.FindReadyThread();
-			}
-			else {
+				/* Zmiana stanu na running */
+				Scheduler.Running.setStan(Process.processState.Running);
 				
 			}
 			
 			if (Scheduler.Running!=null) {
-			Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
+				/* Zapisanie informacji o stanie licznika procesora w momencie ostatniego przydzialu procesora procesowi(postarzanie/odmladzanie) */
+				Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
+				
 			
-			//jesli Used
-			//sprawdzenie wywlaszczenia - po petli, gdy instrukcje beda juz wykonane? tak czy siak bedzie wykonywac proces pierwszy w kolejce, jesli zostanie wywlaszczony
-			// no to i tak zostanie pierwszy, ale co jesli wykorzysta jeden kwant a ma dwa i zostanie wywlaszczony
+			/* Sprawdzenie czy watek ktory otrzymal kwant czasu zostal wywlaszczony */
+			if (this.IsExpropriated==true) {
+				WasExpriopriatedDuringQuantum=true;
+				/* Zabezpieczenie przed potencjalnym bledem o niskim prawdopodobienstwie */
+				if(Scheduler.Running!=null) {
+					/* Aktualizacja danych o procesie wywlaszczonym */
+					Scheduler.Running.setStan(Process.processState.Ready);
+					//Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
+					if(Scheduler.Running.schedulingInformations.getUsedQuantumAmount()>=1) {
+						this.RemoveFromReadyList(Scheduler.Running);
+						this.AddToReadyList(Scheduler.Running);
+					} 
+				}
+				/* Ustawienie procesu wywlaszczajacego na aktualnie wykonywany */
+				Scheduler.Running=this.FindReadyThread();
+				/* Zmiana stanu na running */
+				Scheduler.Running.setStan(Process.processState.Running);
 			}
 			else {
-				/* SEKCJA DLA IDLE THREAD(WATEK POSTOJOWY) */
+				/* Czy w innym wypadku cos trzeba robic? Zapewne nie */
+			}
+			
+			
+			/*
+			 * ======================================
+			 * SEKCJA WYKONYWANIA ROZKAZU
+			 * ======================================
+			 */
+			
+			/* POBRANIE OSTATNICH ZAPISANYCH STANOW REJESTRU Z BLOKU KONTROLNEGO PROCESU */
+			
+			_InterpreterModule.setRegister(Scheduler.Running.getR1(), Scheduler.Running.getR2());
+			
+			
+			
+			/* WYKONANIE ROZKAZU W INTERPETERZE*/
+			
+			
+			
+			/* ZAPISANIE INFORMACJI DO BLOKU KONTROLNEGO PROCESU
+			 * JESLI PROCES WYKONA OSTATNI ROZKAZ NIE POWINIEN BYC OD RAZU USUNIETY TYLKO DOSTAC STATUS TERMINATED(ABY MOZNA BYLO ODCZYTAC Z NIEGO DANE I GO RECZNIE SKASOWAC)
+			 * I POWINIEN MIEC AKTUALNE DANE W REJESTRZE PO OSTATNIM ROZKAZIE*/
+			
+			/*
+			 * ======================================
+			 * SEKCJA WYKONYWANIA ROZKAZU - KONIEC
+			 * ======================================
+			 */
+			
+			
+			}
+			else {
+				/* Proba znalezienia procesu(na wypadek jakby proces dotychczas wykonywany sie zakonczyl i watek ustawiony bylby na null) */
+				Scheduler.Running=this.FindReadyThread();
+				if (Scheduler.Running!=null) {
+				/* Obnizenie licznika wykonywanych instrukcji, ktory zostanie podbity na koniec petli */
+				InstructionsExecuted--;
+				/* Zmiana stanu na running */
+				Scheduler.Running.setStan(Process.processState.Running);
+				/* Ustawienie flagi "niepelnego kwantu" */
+				WasExpriopriatedDuringQuantum=true;
+				}
+				else {
+					/* Petla jest przerywana, aby nie marnowac czasu procesora */
+				break;
+				}
 			}
 			
 			/* Podbicie licznika wykonanych instrukcji */
 			InstructionsExecuted++;
 		}
+		
+		/*Sprawdzenie czy nie jest ustawiony watek postojowy, zabezpieczenie przed bledem */
+		if (Scheduler.Running!=null) {
+		
+		/* Po uplynieciu kwantu czasu ustawiamy stan procesu ktory wykonal ostatni rozkaz na stan Ready pod warunkiem ze wczesniej jego stan nie zostal zmieniony(np. na Waiting) */
+		if (Scheduler.Running.getState()==Process.processState.Running){
+		Scheduler.Running.setStan(Process.processState.Ready);
+		}
+		else {
+			/* Jezeli proces po wykorzystaniu swojego kwantu czasu zmienil stan (np. na Waiting lub Terminated) powinien zostac usuniety z kolejki procesowy gotowych*/
+			this.RemoveFromReadyList(Scheduler.Running);
+		}
+		
+		/* Sprawdzenie czy w trakcie kwantu procesora nastapilo wywlaszczenie, bo jesli bylo to zaden z procesow uczestniczacych nie wyczerpal pelnego kwantu czasu i przysluguje mu nadal pelny */
 		if (WasExpriopriatedDuringQuantum==false) {
+			/* Po wykorzystaniu kwantu przez proces aktualizacja informacji w jego procesie kontrolnym */
 			Scheduler.Running.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter);
 			Scheduler.Running.schedulingInformations.setUsedQuantumAmount((byte) (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()+1));
 			
 			/* Jesli proces wykorzystal ilosc jednostek kwantow czasu nalezy powziac odpowiednie kroki*/
 			if (Scheduler.Running.schedulingInformations.getUsedQuantumAmount()==Scheduler.Running.schedulingInformations.getGivenQuantumAmount()) {
+				
+				/* Usuniecie procesu z poczatku kolejki*/
+				this.RemoveFromReadyList(Scheduler.Running);
+				
 				/* Wyzerowanie ilosci uzytych jednostek kwantow czasu*/
 				Scheduler.Running.schedulingInformations.setUsedQuantumAmount((byte) 0);
-				/* Jesli tymczasowo podwyzszono ilosc danych jednostek kwantow czasu dla danego procesu, po ich wykorzystaniu nalezy wrocic do wartosci domyslnych*/
+				/* Jesli tymczasowo podwyzszono lub zmniejszono ilosc danych jednostek kwantow czasu dla danego procesu, po ich wykorzystaniu nalezy wrocic do wartosci domyslnych*/
 				if (Scheduler.Running.schedulingInformations.getGivenQuantumAmount()!=Scheduler.Running.schedulingInformations.getDefaultGivenQuantumAmount()) {
 				Scheduler.Running.schedulingInformations.setGivenQuantumAmount(Scheduler.Running.schedulingInformations.getDefaultGivenQuantumAmount());
 				}
@@ -415,11 +547,24 @@ public class Scheduler {
 				if (Scheduler.Running.schedulingInformations.getPriorityNumber()!=Scheduler.Running.schedulingInformations.getDefaultPriorityNumber()) {
 					Scheduler.Running.schedulingInformations.setPriorityNumber(Scheduler.Running.schedulingInformations.getDefaultPriorityNumber());
 				}
+				
+				/* Zebezpieczenie przed bledem dodania do kolejki procesu o innym stanie niz Ready */
+				if (Scheduler.Running.getState()==Process.processState.Ready) {
+				/* Dodanie procesu na koniec kolejki o odpowiednim priorytecie */
+				this.AddToReadyList(Scheduler.Running);
+				}
 			}
 			
 		}
+		}
+		/* Po wykonaniu kwantu czasu uruchomienie watku postojowego */
+		Scheduler.Running=null;
+		/* Zwiekszenie wartosci licznika wykonanych kwantow przez procesor */
 		QuantumAmountCounter++;
 	}
+	/*
+	 * FUNKCJA GO - KONIEC
+	 */
 	
 	
 	/*

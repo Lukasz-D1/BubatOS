@@ -37,7 +37,6 @@ public final class MassMemory {
 		free += (byte) tab.length;
 		for (byte i = (byte) (tab.length-1); i != 0; --i) {
 			states &= -2 << tab[i]; //-2==0xfffffffffffffffe
-			System.out.println("crrent state="+Long.toBinaryString(states));
 		}
 	}
 

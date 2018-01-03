@@ -27,8 +27,7 @@ public class Interpreter
         this.registerB=registerB;
         this.commandCounter=commandCounter;
     }
-    /*Odsyłanie zmienionych wartości rejestrów i licznika rozkazów, jako tablicę intów.
-      Jeżeli potrzebuje ktoś inaczej, to dajcie znać.*/
+    /*Odsyłanie zmienionych wartości rejestrów i licznika rozkazów*/
     public int setRegisterA()
     {
         return registerA;
@@ -184,7 +183,8 @@ public class Interpreter
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("HT")) //Koniec programu
         {
-            // jakoś to wszystko wywalac, tylko kurde nie mam pomyslu jak.
+            // jakoś to wszystko wywalac, tylko nie mam pomyslu jak.
+            
             commandCounter=commandCounter+2;
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("CF")) //Tworzenie pliku

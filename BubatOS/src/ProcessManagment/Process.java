@@ -38,15 +38,12 @@ public class Process {
 	private int r1, r2, programCounter; 								
 	
 	// Tablica stronic.
-	@SuppressWarnings("unused")
 	private PageTab processTab;											
-	// Pamięć lub nazwa pliku z danymi programu - niedopowiedziane przez moduły.
-	@SuppressWarnings("unused")
-	private Memory processMemory; 										
-	@SuppressWarnings("unused")
+	// Nazwa pliku z danymi programu - niedopowiedziane przez moduły.
 	private String fileName;			
 	
-		// int base, limit;
+	// Rozmiar pliku.
+	private int sizeOfFile;
 
 	// Konstruktor domyślny.
 	public Process() {

@@ -66,7 +66,7 @@ public final class MassMemory {
 		System.out.println("MassMemory:");
 		System.out.println("states=" + Long.toBinaryString(states));
 		System.out.println("free pages=" + free);
-		for (byte i = 0; i != 16; ++i) {
+		for (byte i = 0; i != 64; ++i) {
 			System.out.print(i + ":");
 			for (byte j = 0; j != 16; j++) {
 				System.out.print(pages[i][j]);

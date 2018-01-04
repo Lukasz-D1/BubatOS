@@ -48,12 +48,6 @@ public class Process {
 
 	// Lista iWêz³ów na których operuje proces.
 	
-	/*
-	 * 
-	 * Semafory tutaj kurwa maæ.
-	 * 
-	 */
-	
 	List<Inode> fileList = new LinkedList<Inode>(); 
 	
 	// Konstruktor domyœlny.

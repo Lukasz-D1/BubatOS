@@ -58,9 +58,21 @@ public class Connection {
 
     public String readMessage(String Pname) {
     	//marcin - zmienione void na String
+    	String temp;
         if (Pname.equals(serverName)) 
         {
-        	return server.read();
+        	try {
+                semaphoreS.P(ps.getProcessByName(Pname));
+            } catch (InterruptedException E) {
+                System.out.println(E.toString());
+            }
+        	temp = server.read();
+        	try {
+            	semaphoreS.V();
+            } catch (InterruptedException E) {
+                System.out.println(E.toString());
+            }
+        	return temp;
         }
         else
         {

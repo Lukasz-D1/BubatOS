@@ -282,7 +282,7 @@ public class PageTab {
 		write(ad, data.toCharArray());
 	}
 
-	// metoda odczytująca amount znaków zaczynając od adresu ad
+		// metoda odczytująca amount znaków zaczynając od adresu ad
 	public char[] read(int ad, int amount) throws Exception {
 		if (ad + amount > size) {
 			throw new Exception("Poza zakresem");
@@ -291,7 +291,8 @@ public class PageTab {
 			return null;
 		}
 		char[] ret = new char[amount];
-		if ((ad % 16) + amount > 32) { // odczytywanie z trzech stron
+		if ((ad % 16) + amount > 32) { // odczytywanie z trzech lub więcej stron
+			int counter = ((ad % 16) + amount) / 16;
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
@@ -301,15 +302,18 @@ public class PageTab {
 				ret[i] = part[i];
 			}
 			re += n;
-			p = tab[ad / 16 + 1];
-			d = 0;
-			n = 16;
-			part = Memory.read(p, d, n);
-			for (byte i = 0; i < n; ++i) {
-				ret[re + i] = part[i];
+			for(int j=1; j!=counter; ++j)
+			{
+				p = tab[ad / 16 + j];
+				d = 0;
+				n = 16;
+				part = Memory.read(p, d, n);
+				for (byte i = 0; i < n; ++i) {
+					ret[re + i] = part[i];
+				}
+				re += n;
 			}
-			re += n;
-			p = tab[ad / 16 + 2];
+			p = tab[ad / 16 + counter];
 			d = 0;
 			n = (byte) (amount - re);
 			part = Memory.read(p, d, n);

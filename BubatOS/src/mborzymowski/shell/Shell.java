@@ -327,7 +327,7 @@ public class Shell{
 	/* BINDY NA KOMENDY */
 	public void execute(String command, boolean isScript)
 	{	
-		if(command.matches("^cd[ ].*") | command.matches("^cd$"))
+		/*if(command.matches("^cd[ ].*") | command.matches("^cd$"))
 		{
 			if(command.matches("^cd[ ]*"))
 			{
@@ -352,7 +352,7 @@ public class Shell{
 				this.pcounter++;
 			}
 		}
-		else if(command.matches("^createfile[ ][a-zA-Z0-9\\.]*$") | command.matches("^writefile$"))
+		else */if(command.matches("^createfile[ ][a-zA-Z0-9\\.]*$") | command.matches("^writefile$"))
 		{
 			if(command.matches("^createfile[ ]*"))
 			{
@@ -828,14 +828,44 @@ public class Shell{
 		else if(command.matches("^help$"))
 		{
 			this.echo("Dostepne komendy: ", false);
-			this.echo("    - cd: przejscie do danego katalogu", false);
-			this.echo("    - run skrypt: uruchomienie skryptu", false);
-			this.echo("    - writefile: tworzy i zapisuje nowy plik", false);
-			this.echo("    - (text)>nazwa: potokowy zapis pliku", false);
-			this.echo("    - readfile: wyswietlenie zawartosci pliku na konsole", false);
+			this.echo("    - createfile nazwa: utworz plik", false);
+			this.echo("    - deletefile nazwa: usun plik", false);
+			this.echo("    - openfile nazwa: otwiera plik", false);
+			this.echo("    - closefile nazwa: zamyka plik", false);
+			this.echo("    - readfile nazwa iloscznakow: wyswietlenie zawartosci pliku na konsole", false);
 			this.echo("    - deletefile: usuwanie pliku", false);
-			this.echo("    - renamefile: zmiana nazwy pliku", false);
-			this.echo("    - shutdown: wylaczenie systemu", false);
+			this.echo("    - renamefile nazwa1 nazwa2: zmiana nazwy pliku", false);
+			this.echo("    - appendfile nazwa: dolaczenie pliku", false);
+			this.echo("    - writefile nazwa: zapisanie pliku", false);
+			this.echo("    - (tresc)>plik: potokowe zapisanie pliku", false);
+			this.echo("    - dir: wyswietlenie zawartosci katalogu", false);
+			this.echo("    =====================================================", false);
+			this.echo("    - printbitvector", false);
+			this.echo("    - printdrive", false);
+			this.echo("    - printdiskblock numer", false);
+			this.echo("    - createfilelink nazwa1 nazwa2", false);
+			this.echo("    - printinodeinfo nazwa", false);
+			this.echo("    =====================================================", false);
+			this.echo("    - createconnection process1 process2: utworzenie socketa komunikacji", false);
+			this.echo("    - sendmessage process1 process2 wiadomosc: wyslanie wiadomosci miedzy procesami", false);
+			this.echo("    - readmessage process1: odebranie wiadomosci", false);
+			this.echo("    - endconnection process1 process2: zakonczenie polaczenia", false);
+			this.echo("    =====================================================", false);
+			this.echo("    - run skrypt.txt: uruchomienie skryptu", false);
+			this.echo("    - go: uruchomienie planisty", false);
+			this.echo("    =====================================================", false);
+			this.echo("    - displaymem: wyswietla stan pamieci", false);
+			this.echo("    - displaymem adres ilosckomorek: wyswietla stan pamieci", false);
+			this.echo("    - displaynamebc nazwaprocesu: pokaz blok kontrolny procesu", false);
+			this.echo("    - displaybc pid: pokaz blok kontrolny procesu", false);
+			this.echo("    =====================================================", false);
+			this.echo("    - createprocess name rozmiar opcjonalnasciezka: tworzenie procesu", false);
+			this.echo("    - stopprocess PID: zatrzymanie procesu", false);
+			this.echo("    - deleteprocess PID: process kill", false);
+			this.echo("    - deletenameprocess nazwa: process kill", false);
+			this.echo("    - stopnameprocess nazwa: zatrzymanie procesu", false);
+			this.echo("    - shutdown", false);
+			this.echo("    - help", false);			
 		}
 		else if(command.matches("[ ]*"))
 		{

@@ -310,11 +310,11 @@ public class Process {
 			
 			/* Ustawienie domyslnej wartosci priorytetu 
 			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
-		//	this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
+		this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
 			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
 			this.PriorityNumber = this.DefaultPriorityNumber;
 			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
-		//	this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
+		this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
 			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
 			this.GivenQuantumAmount = this.DefaultGivenQuantumAmount;
 			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */

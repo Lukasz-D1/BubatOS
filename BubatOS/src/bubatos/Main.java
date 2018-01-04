@@ -25,9 +25,11 @@ public class Main {
 			pm = new ProcessManagment();
 			pm.mainProcess.processTab.write(0, "init");
 			
-			Scheduler sch = new Scheduler(pm.mainProcess, new Interpreter(mainDrive, pm));
+			Scheduler sch = new Scheduler(pm.mainProcess, mainDrive, pm);
 			
-			Shell sh = new Shell(mainDrive, pm);
+			Interpreter intpr = new Interpreter(mainDrive, pm, sch);
+			
+			Shell sh = new Shell(mainDrive, pm, sch);
 			sh.startShell();
 		} catch (Exception e) {
 			System.out.println("Blad tworzenia watku");

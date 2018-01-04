@@ -4,7 +4,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.ListIterator;
+
+import FileSystem.Drive;
 import ProcessManagment.Process;
+import ProcessManagment.ProcessManagment;
 import interpreter.Interpreter;
 
 /* 
@@ -132,11 +136,11 @@ public class Scheduler {
 	 */
 	
 	@SuppressWarnings("unused")
-	public Scheduler(Process init, Interpreter interpreter) {
+	public Scheduler(Process init, Drive mainDrive, ProcessManagment pm) {
 		
 		
 		/* Przypisanie modulu interpretera do pola */
-		this._InterpreterModule=interpreter;
+		this._InterpreterModule=new Interpreter(mainDrive, pm, this);
 		
 		/* Przypisanie do pola procesu INIT */
 		this.InitProcess=init;
@@ -176,12 +180,17 @@ public class Scheduler {
 		/*for (LinkedList<Process> ListPointer: KiDispatcherReadyListHead) {
 			ListPointer=new LinkedList<Process>();
 		}*/
+		
+		/*for(int x = 0;x<PriorityAmount;x++)
+		{
+			KiDispatcherReadyListHead.set(x, new LinkedList<Process>());
+		}*/
 			 
-		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=VARIABLE_CLASS_THREAD_PRIORITY_IDLE; iterator--) {
+		for (byte iterator=REALTIME_CLASS_THREAD_PRIORITY_TIME_CRITICAL; iterator>=INITPROCESS_THREAD_PRIORITY; iterator--) {
 			KiDispatcherReadyListHead.add(iterator, new LinkedList<Process>());
 		}
 		/* INIT */
-		//KiDispatcherReadyListHead.(0).add(this.InitProcess);
+		KiDispatcherReadyListHead.elementAt(0).add(this.InitProcess);
 		/*KiDispatcherReadyListHead.add(0, );*/
 		//ListPointer=new LinkedList<Process>();
 		//ListPointer.add(this.InitProcess);
@@ -209,6 +218,7 @@ public class Scheduler {
 		if (process.getState()==Process.processState.Ready) {
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
 		KiDispatcherReadyListHead.elementAt(PriorityNumber).addLast(process);
+		System.out.println("Dodano do kolejki o priorytecie: "+PriorityNumber+", ID: "+process.getPID());
 		
 		/* Zmieniamy stan bitu na masce bitowej na true jesli byla ustawiona na false*/
 		if (KiReadySummary[PriorityNumber]==false) {
@@ -447,6 +457,8 @@ public class Scheduler {
 		
 		/* Znalezienie procesu o najwyzszym priorytecie do wykonania*/
 		Scheduler.Running=this.FindReadyThread();
+		
+		System.out.println("The chosen one: "+Scheduler.Running.getPID());
 		/* Zmiana stanu na running */
 		Scheduler.Running.setStan(Process.processState.Running);
 		
@@ -500,7 +512,7 @@ public class Scheduler {
 			 */
 			
 			/* POBRANIE OSTATNICH ZAPISANYCH STANOW REJESTRU Z BLOKU KONTROLNEGO PROCESU */
-			
+			System.out.println("Aktualnie wykonywany proces: "+Scheduler.Running.getPID());
 			_InterpreterModule.getRegister(Scheduler.Running.getR1(), Scheduler.Running.getR2(), Scheduler.Running.getProgramCounter());
 			
 			

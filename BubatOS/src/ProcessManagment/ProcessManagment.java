@@ -36,11 +36,14 @@ public class ProcessManagment {
 		Process process;
 		if (parent.schedulingInformations.getDefaultPriorityNumber()!=this.mainProcess.schedulingInformations.getPriorityNumber())
 		{
+			System.out.println("Kopiowanie priorytetu rodzica");
+			
 		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
 		process = new Process(parent);
 		}
 		else { 
 			process = new Process(parent.getProcessName(), parent.getSizeOfFile(), parent.getFileName());
+			System.out.println("Priorytet domyslny");
 		}
 		
 		// Ustawienie ID rodzica.

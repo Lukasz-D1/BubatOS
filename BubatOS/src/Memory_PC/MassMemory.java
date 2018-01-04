@@ -2,12 +2,12 @@ package Memory_PC;
 
 public final class MassMemory {
 	static byte free = 64; // liczba wolnych stron
-	static long states = 0; // zmienna przechowuj¹ca stan ka¿dej strony
+	static long states = 0; // zmienna przechowujï¿½ca stan kaï¿½dej strony
 	static char pages[][] = new char[64][16]; // tablica stron
 
 	static byte[] load(char data[]) {
 		byte i = (byte) ((data.length + 15) / 16);
-		if (i > free) {// B³¹d – za ma³o miejsca
+		if (i > free) {// Bï¿½ï¿½d ï¿½ za maï¿½o miejsca
 			return null;
 		}
 		free -= i;
@@ -61,7 +61,7 @@ public final class MassMemory {
 		return ret;
 	}
 
-	// pomocnicza procedura s³u¿¹ca debugowaniu
+	// pomocnicza procedura sï¿½uï¿½ï¿½ca debugowaniu
 	static void show() {
 		System.out.println("MassMemory:");
 		System.out.println("states=" + Long.toBinaryString(states));

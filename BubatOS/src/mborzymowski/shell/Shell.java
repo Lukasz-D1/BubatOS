@@ -27,6 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultCaret;
 
+import CPU_Scheduling.Scheduler;
 import FileSystem.Drive;
 import FileSystem.FileException;
 import FileSystem.OutOfMemoryException;
@@ -75,10 +76,11 @@ public class Shell{
 	/* MODULY INNYCH */
 	Drive mainDrive;
 	ProcessManagment pm;
+	Scheduler sch;
 	// mem;
 	
 	/* KONSTRUKTOR */
-	public Shell(Drive mainDrive, ProcessManagment pm)
+	public Shell(Drive mainDrive, ProcessManagment pm, Scheduler sch)
 	{
 		this.cmdindex = 0;
 		
@@ -86,6 +88,7 @@ public class Shell{
 		
 		this.pm = pm;
 		
+		this.sch = sch;
 		//this.mem = mem;
 	}
 	
@@ -685,7 +688,13 @@ public class Shell{
 		/* GO */
 		else if(command.matches("^go$"))
 		{
-			
+			try {
+				this.sch.Go();
+				echo("Uruchomiono", false);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				echo(e.getMessage(), false);
+			}
 		}
 		else if(command.matches("^displaymem$"))
 		{
@@ -755,6 +764,7 @@ public class Shell{
 					p1.setSizeOfFile(Integer.parseInt(args[2]));
 					p1.setFileName(args[3]);
 					echo("Utworzono proces", false);
+					this.sch.ReadyThread(p1);
 				} catch (IOException e) {
 					echo("Wystapil blad: "+e.getMessage(), false);
 				}
@@ -766,6 +776,7 @@ public class Shell{
 					p1.setProcessName(args[1]);
 					p1.setSizeOfFile(Integer.parseInt(args[2]));
 					echo("Utworzono proces", false);
+					this.sch.ReadyThread(p1);
 				} catch (IOException e) {
 					echo("Wystapil blad: "+e.getMessage(), false);
 				}
@@ -790,6 +801,10 @@ public class Shell{
 				// TODO Auto-generated catch block
 				echo("Wystapil blad", false);
 			}
+		}
+		else if(command.matches("^ps$"))
+		{
+			pm.ps();
 		}
 		else if(command.matches("^displaynamebc[ ]+[a-zA-Z0-9]+$"))
 		{	

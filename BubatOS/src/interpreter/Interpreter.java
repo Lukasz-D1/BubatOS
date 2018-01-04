@@ -24,8 +24,9 @@ public class Interpreter
     
     public Drive mainDrive;
     public ProcessManagment pm;
+    public Scheduler sch;
     
-    public Interpreter(Drive drv, ProcessManagment pm)
+    public Interpreter(Drive drv, ProcessManagment pm, Scheduler sch)
     {
         registerA=0;
         registerB=0;
@@ -33,6 +34,7 @@ public class Interpreter
         
         this.mainDrive = drv;
         this.pm = pm;
+        this.sch = sch;
     }
     
     /*Pobranie rejestrów*/
@@ -253,6 +255,7 @@ public class Interpreter
         	nowy.setProcessName(command.elementAt(1));
 			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(2)));
 			nowy.setFileName(command.elementAt(3));
+			this.sch.ReadyThread(nowy);
             commandCounter=commandCounter+3+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu

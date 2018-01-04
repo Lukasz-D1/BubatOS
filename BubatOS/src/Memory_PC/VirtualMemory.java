@@ -2,7 +2,7 @@ package Memory_PC;
 
 public final class VirtualMemory {
 	static byte free; //liczba wolnych stron
-	static long states; //zmienna przechowujÄ…ca stan kaÅ¼dej strony
+	static long states; //zmienna przechowuj¹ca stan ka¿dej strony
 	static char pages[][]; //tablica stron
 
 	VirtualMemory() {
@@ -13,7 +13,7 @@ public final class VirtualMemory {
 
 	static byte[] load(char data[]) {
 		byte i = (byte) ((data.length + 15) / 16);
-		if (i > free) {// BÅ‚Ä…d â€“ za maÅ‚o miejsca
+		if (i > free) {// B³¹d – za ma³o miejsca
 			return null;
 		}
 		free -= i;

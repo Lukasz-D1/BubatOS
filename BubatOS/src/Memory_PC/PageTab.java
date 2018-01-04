@@ -7,18 +7,22 @@ import java.io.IOException;
 import java.util.Vector;
 
 public class PageTab {
-	byte[] tab; // tablica numerów stron, w których s¹ dane procesu
+	byte[] tab; // tablica numerów stron, w których są dane procesu
 	int size;
 	String fileName;
 
-	// Poni¿sze 3 zmienne s³u¿¹ do wyci¹gania komend
-	int[][] jumpedIn = new int[4][2];
+ 
+	
+	int[][] jumpedIn = new int[4][2]; //zbiór danych o dotychczas wykonanych procesach
+	byte ji = 0; //zmienna pomocnicza do zarządzania powyższą tablicą
+	// Poniższe 3 zmienne służą do wyciągania komend
 	int lastCommand = -1;
 	byte comP = 0;
 	byte comD = 0;
 
 	public char[] getProcessMemory() {
 		char[] ret = new char[size];
+		System.out.println(size+" "+tab.length);
 		for (byte i = 0; i != size; ++i) {
 			ret[i] = Memory.read(tab[i/16], (byte) (i%16));
 		}
@@ -56,7 +60,7 @@ public class PageTab {
 		BRr.close();
 		Rr.close();
 		char data[] = str.toCharArray();
-		char[] data2 = new char[size];
+		char[] data2 = new char[size]; 
 		for (short i = 0; i != data.length; ++i) {
 			data2[i] = str.charAt(i);
 		}
@@ -80,8 +84,8 @@ public class PageTab {
 		Wr.close();
 	}
 
-	// funkcja zwracaj¹ca komendê o numerze n
-	public Vector<String> getCommand(int n) {
+	// funkcja zwracająca komendę o numerze n
+	public Vector<String> getCommand(int n) throws Exception {
 		Vector<String> ret = new Vector<String>();
 		if (++lastCommand != n) {
 			lastCommand = 0;
@@ -94,6 +98,9 @@ public class PageTab {
 					break;
 				}
 				for (comD = 0; comD != 16; ++comD) {
+					if(comP*16+comD>size) {
+						throw new Exception("Poza zakresem");
+					}
 					if (lastCommand == n) {
 						if (comD == 16) {
 							comD = 0;
@@ -101,7 +108,6 @@ public class PageTab {
 						}
 						break;
 					}
-					// System.out.println("comP="+comP+" comD="+ comD);
 					char c = Memory.read(tab[comP], comD);
 					if (c == 10) {
 						++lastCommand;
@@ -149,12 +155,55 @@ public class PageTab {
 		}
 	}
 
-	// Pobiera komendê spod podanego adresu logicznego
-	public Vector<String> getCommandFromAdress(int adr) {
+	// Pobiera komendę spod podanego adresu logicznego
+	public Vector<String> getCommandFromAddress(int addr) {
+		for(int i=0; i!=ji; ++i) {
+			System.out.println(i+":"+jumpedIn[i][0]+" "+jumpedIn[i][1]);
+		}
 		Vector<String> ret = new Vector<String>();
+		for(int i=0; i!=ji; ++i) {
+			if(addr==jumpedIn[i][1]) {
+				comP=(byte) (addr/16);
+				comD=(byte) (addr%16);
+				System.out.println("I jump into if");
+				lastCommand=jumpedIn[i][0];
+				char c;
+				String str = "";
+				while (true) {
+					for (; comD != 16; comD++) {
+						if (str == "HX" || str == "hx") {
+							ret.add(str);
+							comD++;
+							if (comD > 15) {
+								++comP;
+								comD -= 16;
+							}
+							return ret;
+						}
+						c = Memory.read(tab[comP], comD);
+						if (c == 10) {
+							ret.add(str);
+							comD++;
+							if (comD > 15) {
+								++comP;
+								comD -= 16;
+							}
+							return ret;
+						} else if (c == 32) {
+							ret.add(str);
+							str = "";
+						} else {
+							str += c;
+						}
+					}
+					comD = 0;
+					++comP;
+				}
+			}
+		}
 		lastCommand = 0;
 		for (comP = 0;; ++comP) {
-			if ((comP * 16 + comD) == adr) {
+			if ((comP * 16 + comD) == addr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -162,20 +211,20 @@ public class PageTab {
 				break;
 			}
 			for (comD = 0; comD != 16; ++comD) {
-				if ((comP * 16 + comD) == adr) {
+				if ((comP * 16 + comD) == addr) {
 					if (comD == 16) {
 						comD = 0;
 						++comP;
 					}
+					++lastCommand;
 					break;
 				}
-				// System.out.println("comP="+comP+" comD="+ comD);
 				char c = Memory.read(tab[comP], comD);
 				if (c == 10) {
 					++lastCommand;
 				}
 			}
-			if ((comP * 16 + comD) == adr) {
+			if ((comP * 16 + comD) == addr) {
 				if (comD == 16) {
 					comD = 0;
 					++comP;
@@ -203,6 +252,13 @@ public class PageTab {
 						++comP;
 						comD -= 16;
 					}
+					ji%=4;
+					jumpedIn[ji][1]=addr;
+					jumpedIn[ji][0]=lastCommand;
+					++ji;
+					if(jumpedIn[ji][0]==0 && addr>0) {
+						jumpedIn[ji][0]=1;
+					}
 					return ret;
 				} else if (c == 32) {
 					ret.add(str);
@@ -216,22 +272,22 @@ public class PageTab {
 		}
 	}
 
-	// metoda read w wersji zwracaj¹cej String
+	// metoda read w wersji zwracającej String
 	public String readString(int ad, int amount) throws Exception {
 		return new StringBuilder().append(read(ad, amount)).toString();
 	}
 
-	// metoda write w akceptuj¹ca dane w formie String
+	// metoda write w akceptująca dane w formie String
 	public void write(int ad, String data) throws Exception {
 		write(ad, data.toCharArray());
 	}
 
-	// metoda odczytuj¹ca amount znaków zaczynaj¹c od adresu ad
+	// metoda odczytująca amount znaków zaczynając od adresu ad
 	public char[] read(int ad, int amount) throws Exception {
 		if (ad + amount > size) {
 			throw new Exception("Poza zakresem");
 		}
-		if (ad + amount >= tab.length * 16) { // Gdy odwo³ano siê do znaku o zbyt du¿ym adresie
+		if (ad + amount >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			return null;
 		}
 		char[] ret = new char[amount];
@@ -289,12 +345,12 @@ public class PageTab {
 		return ret;
 	}
 
-	// metoda zapisuj¹ca znaki data zaczynaj¹c od adresu ad
+	// metoda zapisująca znaki data zaczynając od adresu ad
 	public void write(int ad, char[] data) throws Exception {
 		if (ad + data.length > size) {
 			throw new Exception("Poza zakresem");
 		}
-		if (ad + data.length >= tab.length * 16) { // Gdy odwo³ano siê do znaku o zbyt du¿ym adresie
+		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			throw new Exception("Poza zakresem");
 		}
 		if ((ad % 16) + data.length > 32) { // zapisywanie na trzech stronach

@@ -62,7 +62,7 @@ public final class MassMemory {
 	}
 
 	// pomocnicza procedura s�u��ca debugowaniu
-	static void show() {
+	static public void show() {
 		System.out.println("MassMemory:");
 		System.out.println("states=" + Long.toBinaryString(states));
 		System.out.println("free pages=" + free);

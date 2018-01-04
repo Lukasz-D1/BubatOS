@@ -82,7 +82,7 @@ public class Interpreter
            {
                registerB=registerA+registerB;
            }
-           commandCounter=commandCounter+6;
+           commandCounter=commandCounter+7;
     /*_______________________________________________________________*/         
        }else if(command.elementAt(0).equals("SB")) //Odejmowanie rejestrów
         {
@@ -99,7 +99,7 @@ public class Interpreter
             {
                 registerB=registerB-registerA;
             }
-            commandCounter=commandCounter+6;
+            commandCounter=commandCounter+7;
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("MU")) // Mno¿enie rejestrów
         {
@@ -116,7 +116,7 @@ public class Interpreter
             {
                 registerB=registerB*registerA;
             }
-            commandCounter=commandCounter+6;
+            commandCounter=commandCounter+7;
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("MV")) //Przypisywanie wartoœci rejestrom
         {
@@ -146,7 +146,7 @@ public class Interpreter
                 registerB=accu;
             }
             
-            commandCounter=commandCounter+6;
+            commandCounter=commandCounter+7;
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("AX")) //Dodawanie liczby do rejestru
         {
@@ -157,7 +157,7 @@ public class Interpreter
             {
                 registerB=registerB+BasisLibrary.stringToInt(command.elementAt(2));
             }
-            commandCounter=commandCounter+5+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(2).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("SX")) //Odejmowanie liczby z rejestru
         {
@@ -168,7 +168,7 @@ public class Interpreter
             {
                 registerB=registerB-BasisLibrary.stringToInt(command.elementAt(2));
             }
-            commandCounter=commandCounter+5+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(2).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("MX")) //Mno¿enie rejestru razy liczba
         {
@@ -179,7 +179,7 @@ public class Interpreter
             {
                 registerB=registerB*BasisLibrary.stringToInt(command.elementAt(2));
             }
-            commandCounter=commandCounter+5+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(2).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("MO")) //Przypisywanie rejestrowi liczby
         {
@@ -190,7 +190,7 @@ public class Interpreter
             {
                 registerB=BasisLibrary.stringToInt(command.elementAt(2));
             }
-            commandCounter=commandCounter+5+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(2).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("JP")) //Skok do rozkazu o podanym adresie
         {   
@@ -202,38 +202,38 @@ public class Interpreter
         {
             // jakoœ to wszystko wywalac, tylko nie mam pomyslu jak.
             
-            commandCounter=commandCounter+2;
+            commandCounter=commandCounter+3;
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("CF")) //Tworzenie pliku
         {
         	mainDrive.createFile(command.elementAt(1));
             //createFile(command.elementAt(1));
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DF")) //Usuwanie pliku
         {
         	mainDrive.deleteFile(command.elementAt(1));
             //deleteFile(command.elementAt(1));
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("OF")) //Otwieranie pliku
         {
         	mainDrive.openFile(command.elementAt(1));
             //openFile(command.elementAt(1));
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("SF")) //Zamykanie pliku
         {
         	mainDrive.closeFile(command.elementAt(1));
             //closeFile(command.elementAt(1));
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("RF")) //Czytanie z pliku
         {
         	//TU ZROBIC
         	Scheduler.Running.processTab.write(Integer.parseInt(command.elementAt(2)), mainDrive.readFile(command.elementAt(1), Integer.parseInt(command.elementAt(3))));
             //write(BasisLibrary.stringToInt(command.elementAt(1)),readFile(command.elementAt(1),BasisLibrary.stringToInt(command.elementAt(2))));
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
@@ -247,7 +247,7 @@ public class Interpreter
         	}
         	
         	mainDrive.writeFile(command.elementAt(1), zw);
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("CP")) //Tworzenie procesu
         {
@@ -256,7 +256,7 @@ public class Interpreter
 			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(2)));
 			nowy.setFileName(command.elementAt(3));
 			this.sch.ReadyThread(nowy);
-            commandCounter=commandCounter+3+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu
         {
@@ -264,35 +264,35 @@ public class Interpreter
 				pm.kill(pm.getProcessByID(Integer.parseInt(command.elementAt(1))));
 			} catch (NumberFormatException | InterruptedException e) {
 			}
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/
         }else if(command.elementAt(0).equals("RP")) //Odpalanie procesu
         {
            /* Scheduler a=new Scheduler();
             a.ReadyThread(nowy);*/
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("RM")) //Czytanie komunikatu
         {
             Handler.readfromlist(command.elementAt(1)).readMessage(command.elementAt(1));
-            commandCounter=commandCounter+3+command.elementAt(1).length();
+            commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("SM")) //Wys³anie komunikatu
         {
             //x.sendMessage(command.elementAt(1),command.elementAt(2),command.elementAt(3));
             Handler.getFromList(command.elementAt(1), command.elementAt(2)).sendMessage(command.elementAt(1), command.elementAt(2), command.elementAt(3));
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("CC")) //Tworzenie po³¹czenia
         {
             Connection x= new Connection(command.elementAt(1),command.elementAt(2));
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("EC")) //Koñczenie po³¹czenia
         {
             //x.endConnection(command.elementAt(1),command.elementAt(2));
             Handler.getFromList(command.elementAt(1), command.elementAt(2)).endConnection(command.elementAt(1), command.elementAt(2));
-            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartoœci rejestru
         {

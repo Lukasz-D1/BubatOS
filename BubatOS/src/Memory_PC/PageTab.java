@@ -282,7 +282,7 @@ public class PageTab {
 		write(ad, data.toCharArray());
 	}
 
-		// metoda odczytująca amount znaków zaczynając od adresu ad
+	// metoda odczytująca amount znaków zaczynając od adresu ad
 	public char[] read(int ad, int amount) throws Exception {
 		if (ad + amount > size) {
 			throw new Exception("Poza zakresem");
@@ -302,8 +302,7 @@ public class PageTab {
 				ret[i] = part[i];
 			}
 			re += n;
-			for(int j=1; j!=counter; ++j)
-			{
+			for (int j = 1; j != counter; ++j) {
 				p = tab[ad / 16 + j];
 				d = 0;
 				n = 16;
@@ -357,7 +356,8 @@ public class PageTab {
 		if (ad + data.length >= tab.length * 16) { // Gdy odwołano się do znaku o zbyt dużym adresie
 			throw new Exception("Poza zakresem");
 		}
-		if ((ad % 16) + data.length > 32) { // zapisywanie na trzech stronach
+		if ((ad % 16) + data.length > 32) { // zapisywanie na trzech lub więcej stronach
+			int counter = ((ad % 16) + data.length) / 16;
 			byte p = tab[ad / 16];
 			byte d = (byte) (ad % 16);
 			byte n = (byte) (16 - d);
@@ -368,16 +368,18 @@ public class PageTab {
 			Memory.write(p, d, part);
 			byte wr = 0;
 			wr += n;
-			p = tab[ad / 16 + 1];
-			d = 0;
-			n = 16;
-			part = new char[n];
-			for (byte i = 0; i < n; ++i) {
-				part[i] = data[wr + i];
+			for (int j = 1; j != counter; ++j) {
+				p = tab[ad / 16 + j];
+				d = 0;
+				n = 16;
+				part = new char[n];
+				for (byte i = 0; i < n; ++i) {
+					part[i] = data[wr + i];
+				}
+				Memory.write(p, d, part);
 			}
-			Memory.write(p, d, part);
 			wr += n;
-			p = tab[ad / 16 + 2];
+			p = tab[ad / 16 + counter];
 			d = 0;
 			n = (byte) (data.length - wr);
 			part = new char[n];

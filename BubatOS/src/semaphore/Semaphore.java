@@ -1,8 +1,3 @@
-//ZMIANY
-// Pozmieniałem wątki na procesy kierując się klasą Łukasza, dodałem też planiste i tu jescze nie jestem w 100% 
-//pewnien czy to tak ma byc, ale jeszcze przeprowadze z Kuba dokładną rozmowę, bo akurat kiedy to robiłem to nie mógł gadać. 
-// Na moje to już jest tak prawie 100%, ale znając życie jest z 20% zrobione i prędzej dostane depresji niż to zacznie działać
-// Jak coś to pisać
 
 package semaphore;
 
@@ -15,7 +10,8 @@ private boolean stan;
 
 public String name;
 public LinkedList<Process> WaitingList= new LinkedList <Process>();
-//public LinkedList <Process> ReadyList = new LinkedList<Process>();
+Scheduler scheduler;
+public Process IsUsed;
 
 
 public Semaphore( String name) {
@@ -29,12 +25,12 @@ public boolean isStan() {
 
 public void P (Process p) throws InterruptedException
 {
-	Scheduler p1=new Scheduler();
 	if( stan==true)
 	{
 		System.out.println("Semafor jest juz podniesiony. Proces przechodzi dalej");
 		stan=false; // semafor podniesiony, proces opuszcza semafor i wykonuje critical section 
 		System.out.println("Proces" + p.getProcessName() +" wykonuje sie");
+		IsUsed=p;
 	}
 	else
 	{
@@ -42,13 +38,13 @@ public void P (Process p) throws InterruptedException
 		System.out.println("Proces zmienia stan na oczekujacy");
 		p.setStan(Process.processState.Waiting);
 		WaitingList.add(p);
-		p1.ReadyThread(p,true);
+		scheduler.InformSchedulerModifiedState(p);
 	}
 }
 
 public void V() throws InterruptedException
 {
-	Scheduler p1=new Scheduler();
+
 	if(stan==false)
 	{
 		if(WaitingList.isEmpty()==false)
@@ -56,10 +52,9 @@ public void V() throws InterruptedException
 			Process p;
 			p=WaitingList.getFirst();
 			System.out.println("Proces" + p.getProcessName()+" zmienia status na gotowy\n i opuszcza kolejke procesow oczekujacych");
-			p.setStan(Process.processState.Ready);
-			//ReadyList.add(p);
 			WaitingList.removeFirst();
-			p1.ReadyThread(p,true);
+			scheduler.ReadyThread(p,true);
+			IsUsed=p;
 		}
 		else {
 			System.out.println("Brak procesow oczekujacych. Podniesienie semafora");
@@ -67,6 +62,10 @@ public void V() throws InterruptedException
 		}
 	}
 	else {System.out.println("Semafor jest juz aktualnie podniesiony");}
+}
+
+public Process getIsUsed() {
+	return IsUsed;
 }
 
 }

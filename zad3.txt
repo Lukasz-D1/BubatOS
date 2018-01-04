@@ -1,0 +1,7 @@
+CP p1 zad1.txt 43
+CP p2 zad2.txt 41
+CC p1 p2
+SM p1 p2 4
+RC p1
+EC p1 p2
+HT

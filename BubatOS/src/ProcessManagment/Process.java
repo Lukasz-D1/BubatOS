@@ -73,7 +73,7 @@ public class Process {
 		this.processName = name;
 		this.fileName = fileName;
 		this.sizeOfFile = sizeOfFile;
-		this.processTab = new PageTab(fileName, sizeOfFile);
+		//this.processTab = new PageTab(fileName, sizeOfFile);
 		this.state = processState.New;
  
 		this.r1 = 0;

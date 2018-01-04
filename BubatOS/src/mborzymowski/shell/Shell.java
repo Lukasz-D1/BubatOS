@@ -632,9 +632,9 @@ public class Shell{
 		else if(command.matches("^createconnection[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+$"))
 		{
 			String[] args = command.split("[ ]");
-			Connection c = new Connection(args[1], args[2]);
+			Connection c = new Connection(args[1], args[2], pm);
 			Handler.xxx.add(c);
-			echo("Stworzono polaczenie", false);
+			//echo("Stworzono polaczenie", false);
 		}
 		else if(command.matches("^sendmessage[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9]+[ ]+[a-zA-Z0-9/-]+$"))
 		{
@@ -693,6 +693,7 @@ public class Shell{
 				echo("Uruchomiono", false);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				e.printStackTrace();
 				echo(e.getMessage(), false);
 			}
 		}
@@ -753,7 +754,7 @@ public class Shell{
 			pm.stop(pm.getProcessByName(args[1]));
 			echo("Proces zatrzymany", false);
 		}
-		else if(command.matches("^createprocess[ ]+[a-zA-Z0-9]+[ ]+[0-9]+[ ]*[a-zA-Z0-9/.]*$"))
+		else if(command.matches("^createprocess[ ]+[a-zA-Z0-9]+[ ]+[0-9]+[ ]*[a-zA-Z0-9\\.:\\\\]*$"))
 		{
 			String[] args = command.split("[ ]");
 			if(args.length == 4)
@@ -763,6 +764,8 @@ public class Shell{
 					p1.setProcessName(args[1]);
 					p1.setSizeOfFile(Integer.parseInt(args[2]));
 					p1.setFileName(args[3]);
+					PageTab pt = new PageTab(args[3], Integer.parseInt(args[2]));
+					p1.setProcessTab(pt);
 					echo("Utworzono proces", false);
 					this.sch.ReadyThread(p1);
 				} catch (IOException e) {
@@ -775,14 +778,14 @@ public class Shell{
 					Process p1 = pm.fork(pm.mainProcess);
 					p1.setProcessName(args[1]);
 					p1.setSizeOfFile(Integer.parseInt(args[2]));
-					echo("Utworzono proces", false);
+					echo("Utworzono proces1", false);
 					this.sch.ReadyThread(p1);
 				} catch (IOException e) {
 					echo("Wystapil blad: "+e.getMessage(), false);
 				}
 			}
 		}
-		else if(command.matches("^displaymem[ ]+[0-9]+[ ]+[0-9]+"))
+		else if(command.matches("^displaymem[ ]+[0-9]+[ ]+[0-9]+$"))
 		{
 			String[] args = command.split("[ ]");
 			try {

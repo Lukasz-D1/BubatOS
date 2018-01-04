@@ -10,6 +10,7 @@ import java.util.Vector;
 import jdk.nashorn.internal.runtime.regexp.RegExpMatcher;
 import FileSystem.Drive;
 import Memory_PC.Memory;
+import Memory_PC.PageTab;
 import IPC.Connection;
 import IPC.Handler;
 import ProcessManagment.Process;
@@ -51,6 +52,7 @@ public class Interpreter
     }
     public int setRegisterB()
     {
+    	System.out.println(registerB);
         return registerB;
     }
     public int setCommandCounter()
@@ -201,30 +203,63 @@ public class Interpreter
         }else if(command.elementAt(0).equals("HT")) //Koniec programu
         {
             // jakoœ to wszystko wywalac, tylko nie mam pomyslu jak.
-            
+        	pm.stop(Scheduler.Running);
+        	sch.InformSchedulerModifiedState(Scheduler.Running);
             commandCounter=commandCounter+3;
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("CF")) //Tworzenie pliku
         {
-        	mainDrive.createFile(command.elementAt(1));
+        	try
+        	{
+        		mainDrive.createFile(command.elementAt(1));
+        	}
+        	catch(Exception e)
+        	{
+        		pm.stop(Scheduler.Running);
+            	sch.InformSchedulerModifiedState(Scheduler.Running);
+        	}
             //createFile(command.elementAt(1));
             commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DF")) //Usuwanie pliku
         {
-        	mainDrive.deleteFile(command.elementAt(1));
+        	try
+        	{
+        		mainDrive.deleteFile(command.elementAt(1));
+        	}
+        	catch(Exception e)
+        	{
+        		pm.stop(Scheduler.Running);
+            	sch.InformSchedulerModifiedState(Scheduler.Running);
+        	}
             //deleteFile(command.elementAt(1));
             commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("OF")) //Otwieranie pliku
         {
-        	mainDrive.openFile(command.elementAt(1));
+        	try
+        	{
+        		mainDrive.openFile(command.elementAt(1));
+        	}
+        	catch(Exception e)
+        	{
+        		pm.stop(Scheduler.Running);
+            	sch.InformSchedulerModifiedState(Scheduler.Running);
+        	}
             //openFile(command.elementAt(1));
             commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("SF")) //Zamykanie pliku
         {
-        	mainDrive.closeFile(command.elementAt(1));
+        	try
+        	{
+        		mainDrive.closeFile(command.elementAt(1));
+        	}
+        	catch(Exception e)
+        	{
+        		pm.stop(Scheduler.Running);
+            	sch.InformSchedulerModifiedState(Scheduler.Running);
+        	}
             //closeFile(command.elementAt(1));
             commandCounter=commandCounter+4+command.elementAt(1).length();
     /*_______________________________________________________________*/    
@@ -238,7 +273,8 @@ public class Interpreter
         }else if(command.elementAt(0).equals("WF")) //Wpisywanie do pliku
         {
         	char[] zwrot = Scheduler.Running.processTab.read(Integer.parseInt(command.elementAt(2)), Integer.parseInt(command.elementAt(3)));
-            
+        	//char[] zwrot = Scheduler.Running.processTab.read(14,  8);
+        	
         	String zw = "";
         	
         	for(char z1 : zwrot)
@@ -253,10 +289,12 @@ public class Interpreter
         {
         	Process nowy = pm.fork(pm.mainProcess);
         	nowy.setProcessName(command.elementAt(1));
-			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(2)));
-			nowy.setFileName(command.elementAt(3));
+			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(3)));
+			nowy.setFileName(command.elementAt(2));
+			PageTab pt = new PageTab(command.elementAt(2), Integer.parseInt(command.elementAt(3)));
+			nowy.setProcessTab(pt);
 			this.sch.ReadyThread(nowy);
-            commandCounter=commandCounter+4+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
+            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu
         {
@@ -285,22 +323,27 @@ public class Interpreter
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("CC")) //Tworzenie po³¹czenia
         {
-            Connection x= new Connection(command.elementAt(1),command.elementAt(2));
-            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length();
+            Connection x= new Connection(command.elementAt(1),command.elementAt(2), pm);
+            Handler.xxx.add(x);
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("EC")) //Koñczenie po³¹czenia
         {
             //x.endConnection(command.elementAt(1),command.elementAt(2));
             Handler.getFromList(command.elementAt(1), command.elementAt(2)).endConnection(command.elementAt(1), command.elementAt(2));
-            commandCounter=commandCounter+6+command.elementAt(1).length()+command.elementAt(2).length();
+            commandCounter=commandCounter+5+command.elementAt(1).length()+command.elementAt(2).length();
     /*_______________________________________________________________*/        
         }else if(command.elementAt(0).equals("JZ")) //Skok przy zerowej wartoœci rejestru
         {
             if(accu==0)
             {
                 skok(BasisLibrary.stringToInt(command.elementAt(1)));
+                commandCounter=BasisLibrary.stringToInt(command.elementAt(1));
+            }else
+            {
+            	commandCounter=commandCounter+4+command.elementAt(1).length();
             }
-            commandCounter=BasisLibrary.stringToInt(command.elementAt(1));
+            
         }
     /*_______________________________________________________________*/              
     }

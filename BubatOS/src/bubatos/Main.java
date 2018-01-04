@@ -14,6 +14,8 @@ import mborzymowski.shell.*;
 public class Main {
 	
 	public static int debuglevel = 0;
+	
+	public static Scheduler schh;
 
 	public static void main(String[] args) {
 		
@@ -26,6 +28,7 @@ public class Main {
 			pm.mainProcess.processTab.write(0, "init");
 			
 			Scheduler sch = new Scheduler(pm.mainProcess, mainDrive, pm);
+			schh = sch;
 			
 			Interpreter intpr = new Interpreter(mainDrive, pm, sch);
 			

@@ -4,6 +4,7 @@ import java.util.List;
 import java.io.IOException;
 import java.util.LinkedList;
 import FileSystem.Inode;
+import Memory_PC.PageTab;
 import semaphore.Semaphore;
 
 public class ProcessManagment {
@@ -19,6 +20,8 @@ public class ProcessManagment {
 		// Tworzenie procesu init - głównego procesu uruchamianego w trakcie startu systemu.
 		// Konieczna deklaracja instancji obiektu ProcessManagment w main.
 		mainProcess = new Process("init", 4, "");
+		PageTab pt = new PageTab("", 4);
+		mainProcess.setProcessTab(pt);
 		
 		// Ustawienie stanu procesu init na Gotowy.
 		mainProcess.setStan(mainProcess.state.Running);

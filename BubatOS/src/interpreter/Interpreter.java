@@ -253,14 +253,9 @@ public class Interpreter
         {
         	Process nowy = pm.fork(pm.mainProcess);
         	nowy.setProcessName(command.elementAt(1));
-<<<<<<< HEAD
 			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(2)));
 			nowy.setFileName(command.elementAt(3));
 			this.sch.ReadyThread(nowy);
-=======
-			nowy.setSizeOfFile(Integer.parseInt(command.elementAt(3)));
-			nowy.setFileName(command.elementAt(2);
->>>>>>> branch 'master' of https://github.com/BMarcin/BubatOS.git
             commandCounter=commandCounter+3+command.elementAt(1).length()+command.elementAt(2).length()+command.elementAt(3).length();
     /*_______________________________________________________________*/    
         }else if(command.elementAt(0).equals("DP")) //Usuwanie procesu

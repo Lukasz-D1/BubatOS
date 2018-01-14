@@ -15,10 +15,11 @@ public class PageTab {
 	
 	int[][] jumpedIn = new int[4][2]; //zbiór danych o dotychczas wykonanych procesach
 	byte ji = 0; //zmienna pomocnicza do zarządzania powyższą tablicą
-	// Poniższe 3 zmienne służą do wyciągania komend
+	
+	/*// Poniższe 3 zmienne służą do wyciągania komend
 	int lastCommand = -1;
 	byte comP = 0;
-	byte comD = 0;
+	byte comD = 0;*/
 
 	public char[] getProcessMemory() {
 		char[] ret = new char[size];
@@ -192,6 +193,7 @@ public class PageTab {
 		}*/
 	}
 
+	/*
 	// Pobiera komendę spod podanego adresu logicznego
 		public Vector<String> getCommandFromAddress(int addr) {
 			for(int i=0; i!=ji; ++i) {
@@ -308,6 +310,7 @@ public class PageTab {
 				++comP;
 			}
 		}
+		*/
 
 		// metoda read w wersji zwracającej String
 		public String readString(int ad, int amount) throws Exception {

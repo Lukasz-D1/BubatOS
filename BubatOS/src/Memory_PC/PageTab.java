@@ -13,8 +13,8 @@ public class PageTab {
 
  
 	
-	int[][] jumpedIn = new int[4][2]; //zbiór danych o dotychczas wykonanych procesach
-	byte ji = 0; //zmienna pomocnicza do zarządzania powyższą tablicą
+	//int[][] jumpedIn = new int[4][2]; //zbiór danych o dotychczas wykonanych procesach
+	//byte ji = 0; //zmienna pomocnicza do zarządzania powyższą tablicą
 	
 	/*// Poniższe 3 zmienne służą do wyciągania komend
 	int lastCommand = -1;

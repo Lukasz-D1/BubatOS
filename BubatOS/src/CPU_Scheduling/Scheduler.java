@@ -218,6 +218,7 @@ public class Scheduler {
 		if (process.getState()==Process.processState.Ready) {
 		byte PriorityNumber=process.schedulingInformations.getPriorityNumber();
 		KiDispatcherReadyListHead.elementAt(PriorityNumber).addLast(process);
+		process.schedulingInformations.setSchedulersLastQuantumAmountCounter(QuantumAmountCounter); //Zapisanie informacji, przy ktorym kwancie procesora zostal dodany proces, aby prawidlowo go postarzyc
 		System.out.println("Dodano do kolejki o priorytecie: "+PriorityNumber+", ID: "+process.getPID());
 		
 		/* Zmieniamy stan bitu na masce bitowej na true jesli byla ustawiona na false*/

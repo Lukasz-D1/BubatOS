@@ -1,0 +1,8 @@
+MO A 10
+MV B A
+SX B 1
+MV M B
+JZ 42
+MU A B
+JP 14
+HT

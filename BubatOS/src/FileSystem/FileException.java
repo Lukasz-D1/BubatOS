@@ -1,4 +1,4 @@
-package inodes;
+package FileSystem;
 
 public class FileException extends Exception{
 

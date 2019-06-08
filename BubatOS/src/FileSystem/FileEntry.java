@@ -1,4 +1,4 @@
-package inodes;
+package FileSystem;
 
 public class FileEntry {
 	public enum Types{

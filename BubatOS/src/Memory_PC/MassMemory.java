@@ -1,4 +1,4 @@
-package Memory;
+package Memory_PC;
 
 public final class MassMemory {
 	static byte free = 64; // liczba wolnych stron
@@ -34,16 +34,40 @@ public final class MassMemory {
 
 	static void clear(byte tab[]) {
 		free += (byte) tab.length;
-		for (byte i = (byte) tab.length; i != 0; --i) {
-			states &= 0 << tab[i];
+		for (byte i = (byte) (tab.length - 1); i != 0; --i) {
+			states &= -2 << tab[i]; // -2==0xfffffffffffffffe
 		}
 	}
 
-	//pomocnicza procedura służąca debugowaniu
-	static void show() {
+	static public char[][] getPages(int number, int amount) throws Exception {
+		char[][] ret = new char[amount][16];
+		if (number + amount > 63) {
+			throw new Exception("Poza zakresem");
+		}
+		for (int i = 0; i != amount; ++i) {
+			ret[i] = pages[number + i];
+		}
+		return ret;
+	}
+
+	public static char[] getChars(int ad, int amount) throws Exception {
+		if (ad + amount > 1023) {
+			throw new Exception("Poza zakresem");
+		}
+		char[] ret = new char[amount];
+		for (int i = 0; i != amount; ++i) {
+			ret[i] = pages[(ad + i) / 16][(ad + i) % 16];
+		}
+		return ret;
+	}
+
+	// pomocnicza procedura służąca debugowaniu
+	static public void show() {
 		System.out.println("MassMemory:");
+		System.out.println("states=" + Long.toBinaryString(states));
+		System.out.println("free pages=" + free);
 		for (byte i = 0; i != 64; ++i) {
-			System.out.print(i+":");
+			System.out.print(i + ":");
 			for (byte j = 0; j != 16; j++) {
 				System.out.print(pages[i][j]);
 			}

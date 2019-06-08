@@ -1,6 +1,11 @@
+package ProcessManagment;
+
 import java.util.List;
+import java.io.IOException;
 import java.util.LinkedList;
 import CPU_Scheduling.Scheduler;
+import Memory_PC.PageTab;
+import FileSystem.Inode;
 
 
 /* 
@@ -18,59 +23,57 @@ public class Process {
 	// ID procesu.
 	private int PID; 													
 	// ID rodzica procesu.
-	private int PPID; 													
+	private int PPID = 0; 													
 	// Lista dzieci procesu.
 	List<Process> processChildrenList = new LinkedList<Process>(); 		
-	// DostÄ™pne stany - Nowy, DziaÅ‚ajÄ…cy, OczekujÄ…cy, Gotowy, ZakoÅ„czony.
+	// Dostêpne stany - Nowy, Dzia³aj¹cy, Oczekuj¹cy, Gotowy, Zakoñczony.
 	public enum processState {
 		New, Running, Waiting, Ready, Terminated						
 	}; 
 	// Pole odpowiedzialne za przechowywanie aktualnego stanu procesu.
 	public processState state; 											
-	// Licznik procesÃ³w, ktÃ³ry pomaga w nadawaniu ID.
+	// Licznik procesów, który pomaga w nadawaniu ID.
 	private static int processCounter = 0; 								
 
-		// private int processPriority;
-	
 	// Rejestry.
 	private int r1, r2, programCounter; 								
 	
 	// Tablica stronic.
-	@SuppressWarnings("unused")
-	private PageTab processTab;											
-	// PamiÄ™Ä‡ lub nazwa pliku z danymi programu - niedopowiedziane przez moduÅ‚y.
-	@SuppressWarnings("unused")
-	private Memory processMemory; 										
-	@SuppressWarnings("unused")
+	public PageTab processTab;											
+	// Nazwa pliku z danymi programu - niedopowiedziane przez modu³y.
 	private String fileName;			
 	
-		// int base, limit;
+	// Rozmiar pliku.
+	private int sizeOfFile;
 
-	// Konstruktor domyÅ›lny.
+	// Lista iWêz³ów na których operuje proces.
+	
+	List<Inode> fileList = new LinkedList<Inode>(); 
+	
+	// Konstruktor domyœlny.
 	public Process() {
 
 	}
 
-	// Konstruktor wÅ‚aÅ›ciwy. Przyjmowane parametry: nazwa procesu, ID rodzica (potrzebne do struktury hierarchicznej).
-	// Dodatkowo parametr albo pamiÄ™Ä‡, albo nazwa pliku.
-	public Process(String name, int parentID, Memory memory) {
+	// Konstruktor w³aœciwy. Przyjmowane parametry: nazwa procesu, ID rodzica (potrzebne do struktury hierarchicznej).
+	// Dodatkowo parametr albo pamiêæ, albo nazwa pliku.
+	public Process(String name, int sizeOfFile, String fileName) throws IOException {
 		
-		// Nadawanie ID z pomocÄ… licznika procesÃ³w.
+		// Nadawanie ID z pomoc¹ licznika procesów.
 		this.PID = processCounter;
 		processCounter++;
 		
 		// Nadawanie nazwy.
 		this.processName = name;
-
-		this.PPID = parentID;
+		this.fileName = fileName;
+		this.sizeOfFile = sizeOfFile;
+		//this.processTab = new PageTab(fileName, sizeOfFile);
 		this.state = processState.New;
-		// this.processPriority = 0;
-		this.processMemory = memory;
+ 
 		this.r1 = 0;
 		this.r2 = 0;
 		this.programCounter = 0;
-		// this.base = 0;
-		// this.limit = 0;
+
 		/*
 		 * Nadanie wartosci domyslnych polu odpowiadajacemu za przechowywanie
 		 * informacji potrzebnych planiscie
@@ -79,20 +82,46 @@ public class Process {
 
 		System.out.println("Utworzono proces o nazwie: " + processName + ", i ID numer: " + PID);
 	}
+	
+	public Process(Process parent) throws IOException {
+		// Nadawanie ID z pomoc¹ licznika procesów.
+		this.PID = processCounter;
+		processCounter++;
+		
+		// Nadawanie nazwy.
+		this.processName = parent.processName;
+		this.fileName = parent.fileName;
+		this.sizeOfFile = parent.sizeOfFile;
+		this.processTab = new PageTab(fileName, sizeOfFile);
+		this.state = processState.New;
+ 
+		this.r1 = 0;
+		this.r2 = 0;
+		this.programCounter = 0;
 
-	// ZwrÃ³Ä‡ nazwÄ™ procesu.
+		/*
+		 * Nadanie wartosci domyslnych polu odpowiadajacemu za przechowywanie
+		 * informacji potrzebnych planiscie
+		 */
+		this.schedulingInformations = new Process.SchedulingInfo(parent);
+
+		System.out.println("Utworzono proces o nazwie: " + processName + ", i ID numer: " + PID);
+
+	}
+
+	// Zwróæ nazwê procesu.
 	public String getProcessName() {
 		return processName;
 	}
 
-	// Ustaw nazwÄ™ procesu.
+	// Ustaw nazwê procesu.
 	public void setProcessName(String processName) {
 		System.out.println("Poprzednia nazwa procesu: " + this.processName);
 		this.processName = processName;
 		System.out.println("Aktualna nazwa procesu: " + this.processName);
 	}
 	
-	// ZwrÃ³Ä‡ ID procesu.
+	// Zwróæ ID procesu.
 	public int getPID() {
 		return PID;
 	}
@@ -104,7 +133,7 @@ public class Process {
 		System.out.println("Aktualne ID procesu: " + this.PID);
 	}
 	
-	// ZwrÃ³c ID rodzica.
+	// Zwróc ID rodzica.
 	public int getPPID() {
 		return PPID;
 	}
@@ -116,23 +145,23 @@ public class Process {
 		System.out.println("Aktualne ID rodzica: " + this.PPID);
 	}
 
-	// ZwrÃ³Ä‡ licznik procesÃ³w.
+	// Zwróæ licznik procesów.
 	public static int getProcessCounter() {
 		return processCounter;
 	}
 
-	// ZwrÃ³Ä‡ rejestr odpowiedzialny za licznik rozkazÃ³w.
+	// Zwróæ rejestr odpowiedzialny za licznik rozkazów.
 	public int getProgramCounter() {
 		return programCounter;
 	}
 
-	// ZwrÃ³Ä‡ rejestr A.
+	// Zwróæ rejestr A.
 	public int getR1() {
 		return r1;
 	}
 
 	
-	// ZwrÃ³Ä‡ rejestr B.
+	// Zwróæ rejestr B.
 	public int getR2() {
 		return r2;
 	}
@@ -151,7 +180,7 @@ public class Process {
 		System.out.println("Aktualny stan rejestru B: " + this.r2);
 	}
 
-	// ZwrÃ³Ä‡ aktualny stan procesu.
+	// Zwróæ aktualny stan procesu.
 	public processState getState() {
 		return state;
 	}
@@ -160,34 +189,34 @@ public class Process {
 	public void setStan(processState state) {
 		this.state = state;
 	}
-
-	// Wypisz informacje o procesie.
-	public void printProcess(){
-		System.out.println("Proces o nazwie: " + this.getProcessName() + " ; ID: " + this.getPID() + " ; ID rodzica: " + this.getPPID() + " ; o stanie: " + this.getState());
+	
+	public void setProgramCounter(int programCounter) {
+		this.programCounter = programCounter;
 	}
 	
-	// Wypisz listÄ™ procesÃ³w potomnych.
+	// Wypisz informacje o procesie.
+	public String printProcess(){
+		//marcin z void na String
+		System.out.println("Proces o nazwie: " + this.getProcessName() + " ; ID: " + this.getPID() + " ; ID rodzica: " + this.getPPID() + " ; o stanie: " + this.getState());
+		char[] mem = this.processTab.getProcessMemory();
+		
+		String pam = "Zawartosc pamieci: \n";
+		for(char pp1 : mem)
+		{
+			pam+=pp1;
+		}
+		
+		return "Proces o nazwie: " + this.getProcessName() + "\n ID: " + this.getPID() + " \n ID rodzica: " + this.getPPID() + " \n o stanie: " + this.getState() + "o rejestrach R1,R2, program counter: " + this.getR1() + ", " + this.getR2() + ", " + this.getProgramCounter() + " \n rozmiarze w pamieci: " + this.getSizeOfFile() + " \n opcjonalnej sciezce do pliku: " + this.getFileName()+"\n"+pam;
+	}
+	
+	// Wypisz listê procesów potomnych.
 	public void showProcessChildrenList(){
 		for(Process pro : this.processChildrenList){
 			pro.printProcess();
 		}
 	}
 	
-	// 
-	//
-	//
-	//
-	//
-	//
-	//Potrzebna sekcja odpowiedzialna za pamiÄ™Ä‡.
-	//
-	//
-	//
-	//
-	//
-	//
-	
-	
+		
 	/*
 	 * public void setBase(int base) { this.base = base; }
 	 * 
@@ -203,7 +232,43 @@ public class Process {
 	/*
 	 * public int getProcessPriority() { return processPriority; }
 	 */
-
+	
+	
+	public void setProcessTab(PageTab processTab) {
+		this.processTab = processTab;
+	}
+	
+	public PageTab getProcessTab() {
+		return processTab;
+	}
+	
+	public void setSizeOfFile(int sizeOfFile) {
+		this.sizeOfFile = sizeOfFile;
+	}
+	
+	public int getSizeOfFile() {
+		return sizeOfFile;
+	}
+	
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+	
+	public String getFileName() {
+		return fileName;
+	}
+	
+	/*
+	 * 
+	 * Semafory tutaj
+	 * 
+	 */
+	
+	public void addToInodeList(Inode file){
+		fileList.add(file);
+	}
+	
+	
 	/*
 	 * ================================================================================================
 	 * SEKCJA INFORMACJI NA POTRZEBY PLANOWANIA PRZYDZIALU PROCESORA
@@ -239,11 +304,11 @@ public class Process {
 			
 			/* Ustawienie domyslnej wartosci priorytetu 
 			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
-			this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
+		this.DefaultPriorityNumber = Scheduler.VARIABLE_CLASS_THREAD_PRIORITY_NORMAL;
 			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
 			this.PriorityNumber = this.DefaultPriorityNumber;
 			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
-			this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
+		this.DefaultGivenQuantumAmount = Scheduler.DefaultQuantumToGive;
 			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
 			this.GivenQuantumAmount = this.DefaultGivenQuantumAmount;
 			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */
@@ -252,6 +317,27 @@ public class Process {
 		}
 		/*
 		 * KONSTRUKTOR - KONIEC
+		 */ 
+		
+		/*
+		 * KONSTRUKTOR DZIEDZICZ¥CY
+		 */ 
+		public SchedulingInfo(Process parent) {
+			
+			/* Ustawienie domyslnej wartosci priorytetu 
+			 * (nie uzywamy klasy priorytetow czasu rzeczywistego wiec domyslnie jest ustawiony priorytet normalny klasy priorytetow dynamicznych */
+		this.DefaultPriorityNumber = parent.schedulingInformations.getDefaultPriorityNumber();
+			/* Ustawienie aktualnego priorytetu na wzor wartosci domyslnej */
+			this.PriorityNumber = parent.schedulingInformations.getDefaultPriorityNumber();
+			/* Ustawienie domyslnej wartosci przydzielonych kwantow czasu */
+		this.DefaultGivenQuantumAmount = parent.schedulingInformations.getDefaultGivenQuantumAmount();
+			/* Ustawienie aktualnej ilosci przydzielonych kwantow czasu na wzor wartosci domyslnej */
+			this.GivenQuantumAmount = parent.schedulingInformations.GivenQuantumAmount;
+			/* Ustawienie ilosci wykorzystanych kwantow czasu procseroa na zero */
+			this.UsedQuantumAmount = 0;
+		}
+		/*
+		 * KONSTRUKTOR DZIEDZICZ¥CY - KONIEC
 		 */ 
 
 		/*
@@ -296,7 +382,14 @@ public class Process {
 		public void setUsedQuantumAmount(byte usedQuantumAmount) {
 			UsedQuantumAmount = usedQuantumAmount;
 		}
+		
+		public void setDefaultPriorityNumber(byte defaultPriorityNumber) {
+			DefaultPriorityNumber = defaultPriorityNumber;
+		}
 
+		public void setDefaultGivenQuantumAmount(byte defaultGivenQuantumAmount) {
+			DefaultGivenQuantumAmount = defaultGivenQuantumAmount;
+		}
 		/*
 		 * SETTERY I GETTERY - KONIEC
 		 */

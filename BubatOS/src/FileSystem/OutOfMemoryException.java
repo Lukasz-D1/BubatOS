@@ -1,4 +1,4 @@
-package inodes;
+package FileSystem;
 
 public class OutOfMemoryException extends Exception{
 	public OutOfMemoryException(String message){

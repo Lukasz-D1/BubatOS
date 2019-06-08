@@ -1,8 +1,8 @@
-package Memory;
+package Memory_PC;
 
 public final class Memory {
 
-	// funkcja podająca aktualny stan pamięci, jedyna publiczna metoda w tej klasie
+	// funkcja podaj�ca aktualny stan pami�ci, jedyna publiczna metoda w tej klasie
 	static public char[][] getAll() {
 		char[][] ret = new char[4][16];
 		for (byte i = 0; i != 4; ++i) {
@@ -12,16 +12,28 @@ public final class Memory {
 		}
 		return ret;
 	}
+	
+	//metoda zwracaj�ca amount danych od adresu adr
+	static public char[] getChars(int adr, int amount) throws Exception{
+		if(adr+amount>63) {
+			throw new Exception("Poza zakresem");
+		}
+		char[] ret =new char[amount];
+		for(byte i=0; i!=amount; ++i) {
+			ret[i]=frames[adr+amount];
+		}
+		return ret;
+	}
 
-	private static short addr[] = { -1, -1, -1, -1 }; // adresy logiczne stron znajdujących się w poszczególnych ramkach
-	private static byte ws[] = { -1, -1, -1 }; // working set – zbiór roboczy
+	private static short addr[] = { -1, -1, -1, -1 }; // adresy logiczne stron znajduj�cych si� w poszczeg�lnych ramkach
+	private static byte ws[] = { -1, -1, -1 }; // working set � zbi�r roboczy
 	private static byte current = 0; // indeks aktualnie rozpatrywanego elemntu zbioru roboczego
 	// ramki
 	private static char frames[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0 };
 
-	//metoda zapisująca, wykorzystywana wewnątrz modułu zarządzania pamięcią
+	// metoda zapisuj�ca, wykorzystywana wewn�trz modu�u zarz�dzania pami�ci�
 	static void write(byte p, byte d, char[] data) {
 		for (byte i = 0; i != 4; ++i) {
 			if (addr[i] == p) {
@@ -49,7 +61,7 @@ public final class Memory {
 		return;
 	}
 
-	//metoda odczytująca, wykorzystywana wewnątrz modułu zarządzania pamięcią
+	// metoda odczytuj�ca, wykorzystywana wewn�trz modu�u zarz�dzania pami�ci�
 	static char[] read(byte p, byte d, byte n) {
 		char ret[] = new char[n];
 		for (byte i = 0; i != 4; ++i) {
@@ -58,20 +70,20 @@ public final class Memory {
 				++current;
 				current %= 3;
 				for (byte j = d; j != n + d; ++j) {
-					ret[j-d] = frames[i * 16 + j];
+					ret[j - d] = frames[i * 16 + j];
 				}
 				return ret;
 			}
 		}
 		load(p);
 		for (byte j = d; j != n + d; ++j) {
-			ret[j-d] = frames[ws[current] * 16 + j];
+			ret[j - d] = frames[ws[current] * 16 + j];
 		}
 		++current;
 		current %= 3;
 		return ret;
 	}
-	
+
 	static char read(byte p, byte d) {
 		for (byte i = 0; i != 4; ++i) {
 			if (addr[i] == p) {
@@ -82,12 +94,11 @@ public final class Memory {
 			}
 		}
 		load(p);
-		char ret=frames[ws[current] * 16 + d];
+		char ret = frames[ws[current] * 16 + d];
 		++current;
 		current %= 3;
 		return ret;
 	}
-
 
 	private static void load(short p) {
 		byte i = 0;

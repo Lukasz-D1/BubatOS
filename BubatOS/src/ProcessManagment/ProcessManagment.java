@@ -1,5 +1,11 @@
+package ProcessManagment;
+
 import java.util.List;
+import java.io.IOException;
 import java.util.LinkedList;
+import FileSystem.Inode;
+import Memory_PC.PageTab;
+import semaphore.Semaphore;
 
 public class ProcessManagment {
 	// Drzewo (lista) ze wszystkimi procesami.
@@ -9,16 +15,16 @@ public class ProcessManagment {
 	public Process mainProcess;
 
 	@SuppressWarnings("static-access")
-	public ProcessManagment() {
+	public ProcessManagment() throws IOException {
 		// Alokacja pamięci - do dodania. Łata.
-		Memory memory = new Memory();
-		
 		// Tworzenie procesu init - głównego procesu uruchamianego w trakcie startu systemu.
 		// Konieczna deklaracja instancji obiektu ProcessManagment w main.
-		mainProcess = new Process("init", 0, memory);
+		mainProcess = new Process("init", 4, "");
+		PageTab pt = new PageTab("", 4);
+		mainProcess.setProcessTab(pt);
 		
 		// Ustawienie stanu procesu init na Gotowy.
-		mainProcess.setStan(mainProcess.state.Ready);
+		mainProcess.setStan(mainProcess.state.Running);
 		
 		//Dodanie procesu do listy procesów.
 		processList.add(mainProcess);
@@ -29,12 +35,23 @@ public class ProcessManagment {
 	// Pierwszym rodzicem zawsze init.
 	// Modyfikacja pól stworzonego procesu: nowy_proces.setProcessName("nazwa");
 	// Zwrócić uwagę na to, że ID procesu zawsze będzie dobrze nadawane - statyczne pole licznik procesów.
-	public Process fork(Process parent) {
-		// Łata pamięci.
-		Memory memory = new Memory();
-		
+	public Process fork(Process parent) throws IOException {
+		Process process;
+		if (parent.schedulingInformations.getDefaultPriorityNumber()!=this.mainProcess.schedulingInformations.getPriorityNumber())
+		{
+			System.out.println("Kopiowanie priorytetu rodzica");
+			
 		// Tworzenie nowego procesu na zasadzie skopiowania rodzica, ze zmienionymi Parent ID.
-		Process process = new Process(parent.getProcessName(),parent.getPID(), memory);
+		process = new Process(parent);
+		}
+		else { 
+			process = new Process(parent.getProcessName(), parent.getSizeOfFile(), parent.getFileName());
+			System.out.println("Priorytet domyslny");
+		}
+		
+		// Ustawienie ID rodzica.
+		process.setPPID(parent.getPID());
+		
 		
 		// Dodanie procesu do listy procesów.
 		processList.add(process);
@@ -46,12 +63,22 @@ public class ProcessManagment {
 		return process;
 	}
 	
+	public void stop(Process proToStop) {
+		proToStop.setStan(Process.processState.Terminated);
+		System.out.println("Ustawiono Terminated");
+		this.ps();
+		if(proToStop.getPID() == 0)
+		{
+			System.exit(0);
+		}
+	}
 	
 	// Metoda odpowiedzialna za usunięcie danego procesu. Usuwamy go z listy, ustawiamy stan na Terminated.
 	// Zmieniamy ID rodzica na proces init.
 	// Łata ze zwalnianiem pamięci.
-	public void kill(Process proToKill) { 
+	public void kill(Process proToKill) throws InterruptedException { 
 		proToKill.state = Process.processState.Terminated;
+		System.out.println("Ustawiono Terminated");
 		 for(Process pro : proToKill.processChildrenList){
 			 pro.setPPID(0);
 		 }
@@ -61,13 +88,30 @@ public class ProcessManagment {
 				 processList.remove(pro);
 			 }
 		 }
+		 this.ps();
+		 
+		 if(proToKill.getPID() == 0)
+			{
+				System.exit(0);
+			}
+		 
+		 /*
+		  * 
+		  * Semafory tutaj
+		  * 
+		  */
+		 
+		 for(Inode ino : proToKill.fileList)
+		 {
+			 	ino.s.V();
+		 }
 	}
 	
 	// Zwróć proces po nazwie. UWAGA! Nie jest dodawany do listy wszystkich procesów - czy będzie to potrzebne?
 	public Process getProcessByName(String name){
 		Process process = new Process();
 		for(Process pro : processList){
-			if(pro.getProcessName() == name){
+			if(pro.getProcessName().equals(name)){
 				process = pro;
 			}
 		}
@@ -83,7 +127,7 @@ public class ProcessManagment {
 			}
 		}
 		return process;
-	}
+	} 	
 	
 	// Wyświetlanie wszystkich procesów aktualnie istniejących w systemie.
 	public void ps(){
